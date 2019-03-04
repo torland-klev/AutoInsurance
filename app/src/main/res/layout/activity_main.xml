@@ -44,7 +44,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tv_login" />
+        app:layout_constraintTop_toBottomOf="@+id/tv_login"
+        tools:ignore="Autofill" />
 
     <ImageButton
         android:id="@+id/facebookLogo"
@@ -63,7 +64,8 @@
         app:layout_constraintStart_toStartOf="@+id/password"
         app:layout_constraintTop_toBottomOf="@+id/login_button"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/facebook_logo" />
+        app:srcCompat="@drawable/facebook_logo"
+        android:onClick="loginFacebook"/>
 
     <ImageButton
         android:id="@+id/googleLogo"
@@ -83,7 +85,8 @@
         app:layout_constraintStart_toEndOf="@+id/facebookLogo"
         app:layout_constraintTop_toBottomOf="@+id/login_button"
         app:layout_constraintVertical_bias="0.0"
-        app:srcCompat="@drawable/google_logo" />
+        app:srcCompat="@drawable/google_logo"
+        android:onClick="loginGoogle"/>
 
     <Button
         android:id="@+id/login_button"
@@ -92,7 +95,8 @@
         android:layout_marginTop="8dp"
         android:text="@string/login_button"
         app:layout_constraintEnd_toEndOf="@+id/password"
-        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="@+id/password"
-        app:layout_constraintTop_toBottomOf="@+id/password" />
+        app:layout_constraintTop_toBottomOf="@+id/password"
+        android:onClick="loginButton"/>
 </android.support.constraint.ConstraintLayout>
