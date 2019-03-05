@@ -3,4 +3,6 @@
     <string name="login">Login Form</string>
     <string name="facebook_logo">Facebook Logo</string>
     <string name="login_button">Login</string>
+    <string name="loginFailed">Login failed</string>
+    <string name="loginSuccess">Login success</string>
 </resources>
