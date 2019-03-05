@@ -11,10 +11,10 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
-    private EditText username;
-    private EditText password;
+    private EditText USERNAME;
+    private EditText PASSWORD;
     private static final int SDK_VERSION = Build.VERSION.SDK_INT;
     private AccountManager am;
     private Account[] googleAccounts;
@@ -25,8 +25,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        username = findViewById(R.id.username);
-        password = findViewById(R.id.password);
+        USERNAME = findViewById(R.id.username);
+        PASSWORD = findViewById(R.id.password);
         am = AccountManager.get(this);
         googleAccounts = am.getAccountsByType("com.google");
         allAccounts = am.getAccounts();
@@ -45,10 +45,10 @@ public class MainActivity extends AppCompatActivity {
         //Autofill only works for versions 26 and up
         if (SDK_VERSION >= 26){
             Log.i("MainActivity","API version is " + SDK_VERSION + "\n");
-            username.setAutofillHints(View.AUTOFILL_HINT_USERNAME);
-            username.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
-            password.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
-            password.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+            USERNAME.setAutofillHints(View.AUTOFILL_HINT_USERNAME);
+            USERNAME.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
+            PASSWORD.setAutofillHints(View.AUTOFILL_HINT_PASSWORD);
+            PASSWORD.setImportantForAutofill(View.IMPORTANT_FOR_AUTOFILL_YES);
         }
         else {
             Log.i("MainActivity", "API version " +
@@ -56,12 +56,31 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     *
+     * @param view
+     */
     public void loginButton(View view) {
+        AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
+        asyncTask.delegate = this;
+        String[] args = {"login", USERNAME.getText().toString(), PASSWORD.getText().toString()};
+        asyncTask.execute(args);
     }
 
+    //TODO: login from Google account
     public void loginGoogle(View view) {
     }
 
+    //TODO: login from Facebook account
     public void loginFacebook(View view) {
+    }
+
+    /** TODO: Switch to next activity
+     * Do something with the result from the AsyncWebServiceCaller
+     * @param output: Output returned from the Async task.
+     */
+    @Override
+    public void processFinish(String output) {
+        Log.d("Call Results", output);
     }
 }
