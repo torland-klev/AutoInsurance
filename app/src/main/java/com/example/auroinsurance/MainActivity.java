@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //Grab the different Views
         USERNAME = findViewById(R.id.username);
         PASSWORD = findViewById(R.id.password);
         LOGIN_STATUS = findViewById(R.id.login_status);
@@ -36,7 +37,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         googleAccounts = am.getAccountsByType("com.google");
         allAccounts = am.getAccounts();
 
-        //If no Google Accounts found, remove the button
+        //If no Google/other accounts found, make the buttons invisible
         ImageButton ib_google = findViewById(R.id.googleLogo);
         ImageButton ib_facebook = findViewById(R.id.facebookLogo);
         if (googleAccounts.length == 0){
@@ -62,8 +63,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     }
 
     /**
-     *
-     * @param view
+     * The loginButton calls this method.
+     * Method creates a new Async task, and executes it with user-provided username and password.
+     * @param view: View that the button is clicked from (unsure about this, read more)
      */
     public void loginButton(View view) {
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
@@ -86,15 +88,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
      */
     @Override
     public void processFinish(String output) {
+        //Login return 0 if login failed.
         if (output.equals("0")) {
             LOGIN_STATUS.setVisibility(View.VISIBLE);
             LOGIN_STATUS.setTextColor(Color.RED);
-            LOGIN_STATUS.setText("Login failed");
+            LOGIN_STATUS.setText(getString(R.string.loginFailed));
         } else {
-
             LOGIN_STATUS.setVisibility(View.VISIBLE);
             LOGIN_STATUS.setTextColor(Color.GREEN);
-            LOGIN_STATUS.setText("Login success");
+            LOGIN_STATUS.setText(getString(R.string.loginSuccess));
         }
         Log.d("Call Results", output);
     }
