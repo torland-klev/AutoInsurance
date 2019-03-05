@@ -2,6 +2,7 @@ package com.example.auroinsurance;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,11 +11,13 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private EditText USERNAME;
     private EditText PASSWORD;
+    private TextView LOGIN_STATUS;
     private static final int SDK_VERSION = Build.VERSION.SDK_INT;
     private AccountManager am;
     private Account[] googleAccounts;
@@ -27,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
         USERNAME = findViewById(R.id.username);
         PASSWORD = findViewById(R.id.password);
+        LOGIN_STATUS = findViewById(R.id.login_status);
+
         am = AccountManager.get(this);
         googleAccounts = am.getAccountsByType("com.google");
         allAccounts = am.getAccounts();
@@ -81,6 +86,16 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
      */
     @Override
     public void processFinish(String output) {
+        if (output.equals("0")) {
+            LOGIN_STATUS.setVisibility(View.VISIBLE);
+            LOGIN_STATUS.setTextColor(Color.RED);
+            LOGIN_STATUS.setText("Login failed");
+        } else {
+
+            LOGIN_STATUS.setVisibility(View.VISIBLE);
+            LOGIN_STATUS.setTextColor(Color.GREEN);
+            LOGIN_STATUS.setText("Login success");
+        }
         Log.d("Call Results", output);
     }
 }
