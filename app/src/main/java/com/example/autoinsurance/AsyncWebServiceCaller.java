@@ -1,4 +1,4 @@
-package com.example.auroinsurance;
+package com.example.autoinsurance;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -15,9 +15,21 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
 
     AsyncResponse delegate = null; //Package private
+    private Boolean connectionTest = false;
+    private final String URL = "http://10.0.2.2:8080/AutoInSureWS?WSDL";
 
     @Override
     protected String doInBackground(String... params) {
+
+        //Check if Async thread is for connection testing.
+        if (params[0].equals("TEST_CONNECTION")){
+            connectionTest = true;
+            if (testConnection()){
+                return "1";
+            }
+            return "0";
+        }
+
         String s;
 
         //Assumes METHOD is first param, rest of params are specific to a method
@@ -25,7 +37,7 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         try {
             s = makeRequest(params[0], rest);
         } catch (Exception e){
-            s = "Call did not work.\n";
+            s = "-1";
             e.printStackTrace();
         }
         Log.i("AWSC.doInBackground", s);
@@ -34,6 +46,19 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
     protected void onPostExecute(String result){
         delegate.processFinish(result);
+    }
+
+    //Simple connection checker;
+    private Boolean testConnection(){
+        int TIMEOUT = MainActivity.CONNECTION_TEST_TIMEOUT;
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL, TIMEOUT);
+        try {
+            androidHttpTransport.getServiceConnection().getResponseCode();
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     private String makeRequest(String method, String... args) throws Exception{
@@ -47,8 +72,8 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         }
         SoapSerializationEnvelope envelope = new SoapSerializationEnvelope(SoapEnvelope.VER11);
         envelope.setOutputSoapObject(request);
-        String URL = "http://10.0.2.2:8080/AutoInSureWS?WSDL";
-        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL);
+        int TIMEOUT = 4000;
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL, TIMEOUT);
         String SERVICE_NAME = "AutoInsureWS";
         String SOAP_ACTION = "\"" + NAMESPACE + SERVICE_NAME + "/" + method + "\"";
         Log.i("AWSC.makeRequest", SOAP_ACTION);

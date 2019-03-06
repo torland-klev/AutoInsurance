@@ -1,28 +1,29 @@
-package com.example.auroinsurance;
+package com.example.autoinsurance;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
+    public static final int CONNECTION_TEST_TIMEOUT = 4000;
     private EditText USERNAME;
     private EditText PASSWORD;
     private TextView LOGIN_STATUS;
+    private TextView CONNECTION_STATUS;
     private static final int SDK_VERSION = Build.VERSION.SDK_INT;
     private AccountManager am;
     private Account[] googleAccounts;
     private Account[] allAccounts;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,7 +33,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         USERNAME = findViewById(R.id.username);
         PASSWORD = findViewById(R.id.password);
         LOGIN_STATUS = findViewById(R.id.login_status);
+        CONNECTION_STATUS = findViewById(R.id.connectionStatus);
 
+        //Check for different accounts
         am = AccountManager.get(this);
         googleAccounts = am.getAccountsByType("com.google");
         allAccounts = am.getAccounts();
@@ -60,6 +63,45 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             Log.i("MainActivity", "API version " +
                     SDK_VERSION + " does not support autofill.\n");
         }
+
+        //Test connection
+        class MyThread extends Thread implements AsyncResponse{
+            private Boolean prevConnected = false;
+            public void run(){
+                while(true) {
+                    Log.i("TestConnection", "Testing connection.\n");
+                    AsyncWebServiceCaller testConnection = new AsyncWebServiceCaller();
+                    testConnection.delegate = this;
+                    testConnection.execute("TEST_CONNECTION");
+                    try {
+                        //If connection was previously established, take 3 times longer between testing
+                        if (prevConnected){
+                            Thread.sleep(CONNECTION_TEST_TIMEOUT * 2);
+                        }
+                        Thread.sleep(CONNECTION_TEST_TIMEOUT);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            @Override
+            public void processFinish(String output) {
+                if (output.equals("0")) {
+                    prevConnected = false;
+                    CONNECTION_STATUS.setVisibility(View.VISIBLE);
+                    CONNECTION_STATUS.setTextColor(Color.RED);
+                    CONNECTION_STATUS.setText(getString(R.string.webServerUnavailable));
+                } else {
+                    prevConnected = true;
+                    CONNECTION_STATUS.setVisibility(View.VISIBLE);
+                    CONNECTION_STATUS.setTextColor(Color.GREEN);
+                    CONNECTION_STATUS.setText(getString(R.string.webServerAvailable));
+                }
+            }
+        }
+        MyThread testConnectionThread = new MyThread();
+        testConnectionThread.start();
     }
 
     /**
@@ -88,16 +130,37 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
      */
     @Override
     public void processFinish(String output) {
+
+        Log.d("Call Results", output);
         //Login return 0 if login failed.
         if (output.equals("0")) {
             LOGIN_STATUS.setVisibility(View.VISIBLE);
             LOGIN_STATUS.setTextColor(Color.RED);
             LOGIN_STATUS.setText(getString(R.string.loginFailed));
-        } else {
+        }
+        else if (output.equals("-1")) {
+            LOGIN_STATUS.setVisibility(View.VISIBLE);
+            LOGIN_STATUS.setTextColor(Color.RED);
+            LOGIN_STATUS.setText(getString(R.string.webServerUnavailable));
+        }
+        else {
             LOGIN_STATUS.setVisibility(View.VISIBLE);
             LOGIN_STATUS.setTextColor(Color.GREEN);
             LOGIN_STATUS.setText(getString(R.string.loginSuccess));
+            navigateToHomeScreen(output);
         }
-        Log.d("Call Results", output);
+    }
+
+    private void navigateToHomeScreen(){
+        Intent homeScreenIntent = new Intent(this, HomeActivity.class);
+        startActivity(homeScreenIntent);
+    }
+
+    private <T> void navigateToHomeScreen(T extra){
+        Intent homeScreenIntent = new Intent(this, HomeActivity.class);
+        final String EXTRA_MESSAGE =
+                "com.example.android.autoinsurance.extra.MESSAGE";
+        homeScreenIntent.putExtra(EXTRA_MESSAGE, extra.toString());
+        startActivity(homeScreenIntent);
     }
 }

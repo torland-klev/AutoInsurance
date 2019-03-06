@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.example.auroinsurance">
-    <uses-permission android:name="android.permission.GET_ACCOUNTS"/>
+    package="com.example.autoinsurance">
+
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -12,8 +13,15 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true"> <!-- As of API 28, cleartext HTTP is disabled by default. -->
-        <activity android:name=".MainActivity">
+        android:usesCleartextTraffic="true">
+        <!-- As of API 28, cleartext HTTP is disabled by default. -->
+        <activity android:name="com.example.autoinsurance.HomeActivity"
+            android:label="@string/homeActivityName"
+            android:parentActivityName="com.example.autoinsurance.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="com.example.autoinsurance.MainActivity"/> </activity>
+        <activity android:name="com.example.autoinsurance.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

@@ -5,4 +5,7 @@
     <string name="login_button">Login</string>
     <string name="loginFailed">Login failed</string>
     <string name="loginSuccess">Login success</string>
+    <string name="homeActivityName">HomeActivity</string>
+    <string name="webServerUnavailable">Web Server Unavailable</string>
+    <string name="webServerAvailable">Web Server Available</string>
 </resources>
