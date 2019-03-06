@@ -133,21 +133,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
         Log.d("Call Results", output);
         //Login return 0 if login failed.
-        if (output.equals("0")) {
-            LOGIN_STATUS.setVisibility(View.VISIBLE);
-            LOGIN_STATUS.setTextColor(Color.RED);
-            LOGIN_STATUS.setText(getString(R.string.loginFailed));
-        }
-        else if (output.equals("-1")) {
-            LOGIN_STATUS.setVisibility(View.VISIBLE);
-            LOGIN_STATUS.setTextColor(Color.RED);
-            LOGIN_STATUS.setText(getString(R.string.webServerUnavailable));
-        }
-        else {
-            LOGIN_STATUS.setVisibility(View.VISIBLE);
-            LOGIN_STATUS.setTextColor(Color.GREEN);
-            LOGIN_STATUS.setText(getString(R.string.loginSuccess));
-            navigateToHomeScreen(output);
+        switch (output) {
+            case "0":
+                LOGIN_STATUS.setVisibility(View.VISIBLE);
+                LOGIN_STATUS.setTextColor(Color.RED);
+                LOGIN_STATUS.setText(getString(R.string.loginFailed));
+                break;
+            case "-1":
+                LOGIN_STATUS.setVisibility(View.VISIBLE);
+                LOGIN_STATUS.setTextColor(Color.RED);
+                LOGIN_STATUS.setText(getString(R.string.webServerUnavailable));
+                break;
+            default:
+                LOGIN_STATUS.setVisibility(View.VISIBLE);
+                LOGIN_STATUS.setTextColor(Color.GREEN);
+                LOGIN_STATUS.setText(getString(R.string.loginSuccess));
+                navigateToHomeScreen(output);
+                break;
         }
     }
 
