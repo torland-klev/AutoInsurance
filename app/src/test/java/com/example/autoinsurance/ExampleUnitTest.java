@@ -1,4 +1,4 @@
-package com.example.auroinsurance;
+package com.example.autoinsurance;
 
 import org.junit.Test;
 

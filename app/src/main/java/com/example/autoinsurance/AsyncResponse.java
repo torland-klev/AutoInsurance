@@ -1,4 +1,4 @@
-package com.example.auroinsurance;
+package com.example.autoinsurance;
 
 public interface AsyncResponse {
     void processFinish(String output);
