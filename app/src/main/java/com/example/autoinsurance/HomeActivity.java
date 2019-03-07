@@ -1,14 +1,31 @@
 package com.example.autoinsurance;
 
+import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.kobjects.util.Strings;
+import org.w3c.dom.Text;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
-    private int SESSION_ID;
+    private String SESSION_ID;
+    private String RESULT;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -16,22 +33,74 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         setContentView(R.layout.activity_home);
 
         Intent mIntent = getIntent();
-        SESSION_ID = mIntent.getIntExtra("SESSION_ID", 0);
-        Log.i("HOME_SESSION_ID", Integer.toString(SESSION_ID));
+        SESSION_ID = mIntent.getStringExtra("SESSION_ID");
+        Log.i("HOME_SESSION_ID", SESSION_ID);
+        getCustomerInfo();
     }
 
     public void logout(View view) {
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
         asyncTask.delegate = this;
-        String[] args = {"logout", Integer.toString(SESSION_ID)};
+        String[] args = {"logout", SESSION_ID};
+        asyncTask.execute(args);
+    }
+
+    private void getCustomerInfo(){
+        AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
+        asyncTask.delegate = this;
+        String[] args = {"getCustomerInfo", SESSION_ID};
         asyncTask.execute(args);
     }
 
     @Override
     public void processFinish(String output) {
-        Log.i("Logout", output);
-        setResult(RESULT_OK, new Intent());
-        finish();
+        //User clicks LogOut
+        if (output.equals("true")) {
+            setResult(RESULT_OK, new Intent());
+            finish();
+        }
+        //Called from onCreate()
 
+        //Storing customer data in a HashMap. May be useful to have it stored later.
+        HashMap<String, String> customer = new HashMap<>();
+        try {
+            JSONObject obj  = new JSONObject(output);
+            Iterator<String> keys = obj.keys();
+            while (keys.hasNext()){
+                String s = keys.next();
+                customer.put(s, obj.getString(s));
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        fillActivity(customer);
+    }
+
+    private void fillActivity(HashMap<String, String> customer) {
+
+        RelativeLayout rl = findViewById(R.id.home_layout);
+        int c = 0;
+        for (Map.Entry<String, String> pair : customer.entrySet()) {
+            c++;
+            TextView value = new TextView(this);
+            TextView key = new TextView(this);
+            value.setText(pair.getValue());
+            value.setId(c);
+            value.setGravity(Gravity.CENTER_HORIZONTAL);
+            //key.setTypeface(null, Typeface.BOLD);
+            key.setText(pair.getKey());
+            RelativeLayout.LayoutParams p = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            RelativeLayout.LayoutParams p2 = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (c == 1){
+                p.addRule(RelativeLayout.BELOW, R.id.home_title);
+            } else {
+                p.addRule(RelativeLayout.BELOW, c-1);
+            }
+            p2.addRule(RelativeLayout.ALIGN_LEFT, c);
+            value.setLayoutParams(p);
+            key.setLayoutParams(p2);
+            rl.addView(value);
+            rl.addView(key);
+        }
     }
 }

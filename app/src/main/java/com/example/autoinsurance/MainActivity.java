@@ -36,6 +36,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         LOGIN_STATUS = findViewById(R.id.login_status);
         CONNECTION_STATUS = findViewById(R.id.connectionStatus);
 
+        //Set focus on username
+        USERNAME.requestFocus();
+
         //Check for different accounts
         am = AccountManager.get(this);
         googleAccounts = am.getAccountsByType("com.google");
@@ -134,6 +137,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
         Log.d("Call Results", output);
         //Login return 0 if login failed.
+        USERNAME.getText().clear();
+        PASSWORD.getText().clear();
+        USERNAME.requestFocus();
         switch (output) {
             case "0":
                 LOGIN_STATUS.setVisibility(View.VISIBLE);
@@ -156,7 +162,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private void navigateToHomeScreen(String extra) {
         Intent homeScreenIntent = new Intent(this, HomeActivity.class);
-        homeScreenIntent.putExtra("SESSION_ID", Integer.parseInt(extra));
+        homeScreenIntent.putExtra("SESSION_ID", extra);
         startActivityForResult(homeScreenIntent, BOOLEAN_REQUEST);
     }
     @Override
