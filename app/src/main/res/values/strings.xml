@@ -8,4 +8,8 @@
     <string name="homeActivityName">HomeActivity</string>
     <string name="webServerUnavailable">Web Server Unavailable</string>
     <string name="webServerAvailable">Web Server Available</string>
+    <string name="home">Home</string>
+    <string name="logout">Log Out</string>
+    <string name="logout_success">Logout Successfull</string>
+    <string name="logout_unsuccess">Something went wrong while logging out</string>
 </resources>

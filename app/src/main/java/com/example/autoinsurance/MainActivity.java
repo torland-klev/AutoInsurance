@@ -16,6 +16,7 @@ import android.widget.TextView;
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     public static final int CONNECTION_TEST_TIMEOUT = 4000;
+    private final int BOOLEAN_REQUEST = 1;
     private EditText USERNAME;
     private EditText PASSWORD;
     private TextView LOGIN_STATUS;
@@ -153,16 +154,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
     }
 
-    private void navigateToHomeScreen(){
+    private void navigateToHomeScreen(String extra) {
         Intent homeScreenIntent = new Intent(this, HomeActivity.class);
-        startActivity(homeScreenIntent);
+        homeScreenIntent.putExtra("SESSION_ID", Integer.parseInt(extra));
+        startActivityForResult(homeScreenIntent, BOOLEAN_REQUEST);
     }
-
-    private <T> void navigateToHomeScreen(T extra){
-        Intent homeScreenIntent = new Intent(this, HomeActivity.class);
-        final String EXTRA_MESSAGE =
-                "com.example.android.autoinsurance.extra.MESSAGE";
-        homeScreenIntent.putExtra(EXTRA_MESSAGE, extra.toString());
-        startActivity(homeScreenIntent);
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        Log.d("onActivityResult", "Was run");
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == BOOLEAN_REQUEST) {
+            if (resultCode == RESULT_OK) {
+                LOGIN_STATUS.setText(getString(R.string.logout_success));
+                LOGIN_STATUS.setTextColor(Color.BLUE);
+            }
+        } else {
+            LOGIN_STATUS.setText(getString(R.string.logout_unsuccess));
+            LOGIN_STATUS.setTextColor(Color.YELLOW);
+        }
     }
 }

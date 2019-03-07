@@ -15,7 +15,6 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
 
     AsyncResponse delegate = null; //Package private
-    private Boolean connectionTest = false;
     private final String URL = "http://10.0.2.2:8080/AutoInSureWS?WSDL";
 
     @Override
@@ -23,7 +22,6 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
         //Check if Async thread is for connection testing.
         if (params[0].equals("TEST_CONNECTION")){
-            connectionTest = true;
             if (testConnection()){
                 return "1";
             }
@@ -37,8 +35,8 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         try {
             s = makeRequest(params[0], rest);
         } catch (Exception e){
-            s = "-1";
             e.printStackTrace();
+            return "-1";
         }
         Log.i("AWSC.doInBackground", s);
         return s;
