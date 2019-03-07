@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example.autoinsurance">
 
     <uses-permission android:name="android.permission.GET_ACCOUNTS" />
@@ -13,10 +14,31 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
-        android:usesCleartextTraffic="true">
-        <activity android:name=".ChatActivity"></activity>
-        <activity android:name=".HistoryActivity" />
+        android:usesCleartextTraffic="true"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name=".ChatActivity">
+            android:label = "ChatActivity"
+            android:parentActivityName=".HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=
+                    "com.example.autoinsurance.ChatActivity" />
+        </activity>
+        <activity android:name=".HistoryActivity" >
+            android:label = "HistoryActivity"
+            android:parentActivityName=".HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=
+                    "com.example.autoinsurance.HistoryActivity" />
+        </activity>
         <activity android:name=".NewClaimActivity" /> <!-- As of API 28, cleartext HTTP is disabled by default. -->
+            android:label = "NewClaimActivity"
+            android:parentActivityName=".HomeActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=
+                    "com.example.autoinsurance.NewClaimActivity" />
         <activity
             android:name=".HomeActivity"
             android:label="@string/homeActivityName"
