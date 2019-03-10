@@ -12,4 +12,9 @@
     <string name="slideshow">slideshow</string>
     <string name="gallery">gallery</string>
     <string name="im">import</string>
+    <string name="nav_home">Home</string>
+    <string name="nav_history">History</string>
+    <string name="nav_chat">Chat</string>
+    <string name="nav_claim">New claim</string>
+    <string name="nav_log_out">Log out</string>
 </resources>

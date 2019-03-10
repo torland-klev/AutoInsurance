@@ -5,12 +5,19 @@ import android.accounts.AccountManager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
+import android.support.design.widget.NavigationView;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.Switch;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
@@ -24,10 +31,19 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     private AccountManager am;
     private Account[] googleAccounts;
     private Account[] allAccounts;
+    private DrawerLayout drawerLayout;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        // Sets a new toolbar with navigation menu button
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionbar = getSupportActionBar();
+        actionbar.setDisplayHomeAsUpEnabled(true);
+        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
+
 
         //Grab the different Views
         USERNAME = findViewById(R.id.username);
@@ -63,6 +79,44 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             Log.i("MainActivity", "API version " +
                     SDK_VERSION + " does not support autofill.\n");
         }
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+
+        //creates a listener for the navigation menu
+        NavigationView navigationView = findViewById(R.id.nav_view);
+        navigationView.setNavigationItemSelectedListener(
+                new NavigationView.OnNavigationItemSelectedListener() {
+                    @Override
+                    public boolean onNavigationItemSelected(MenuItem menuItem) {
+                        // set item as selected to persist highlight
+                        menuItem.setChecked(true);
+                        switch (menuItem.toString()) {
+                            case "Home":
+                                Log.d("NAVIGATION_MENU", "Home");
+                                break;
+                            case "History":
+                                Log.d("NAVIGATION_MENU", "History");
+                                break;
+                            case "Chat":
+                                Log.d("NAVIGATION_MENU", "Chat");
+                                break;
+                            case "New claim":
+                                Log.d("NAVIGATION_MENU", "New claim");
+                                break;
+                            case "Log out":
+                                Log.d("NAVIGATION_MENU", "Log out");
+                                break;
+                        }
+                        // close drawer when item is tapped
+                        drawerLayout.closeDrawers();
+
+                        // Add code here to update the UI based on the item selected
+                        // For example, swap UI fragments here
+
+                        return true;
+                    }
+                });
+
 
         //Test connection
         class MyThread extends Thread implements AsyncResponse{
@@ -103,6 +157,17 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         MyThread testConnectionThread = new MyThread();
         testConnectionThread.start();
     }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
 
     /**
      * The loginButton calls this method.
