@@ -90,28 +90,32 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     public boolean onNavigationItemSelected(MenuItem menuItem) {
                         // set item as selected to persist highlight
                         menuItem.setChecked(true);
+
+                        // close drawer when item is tapped
+                        drawerLayout.closeDrawers();
+
+                        // Add code here to update the UI based on the item selected
+                        // For example, swap UI fragments here
                         switch (menuItem.toString()) {
                             case "Home":
                                 Log.d("NAVIGATION_MENU", "Home");
                                 break;
                             case "History":
                                 Log.d("NAVIGATION_MENU", "History");
+                                startHistoryActivity();
                                 break;
                             case "Chat":
                                 Log.d("NAVIGATION_MENU", "Chat");
+                                startChatActivity();
                                 break;
                             case "New claim":
                                 Log.d("NAVIGATION_MENU", "New claim");
+                                startNewClaimActivity();
                                 break;
                             case "Log out":
                                 Log.d("NAVIGATION_MENU", "Log out");
                                 break;
                         }
-                        // close drawer when item is tapped
-                        drawerLayout.closeDrawers();
-
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
 
                         return true;
                     }
@@ -168,6 +172,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         return super.onOptionsItemSelected(item);
     }
 
+    public void startHistoryActivity (){
+        Log.d("NAVIGATION_MENU", "prøver å åpne history activity");
+        Intent intent = new Intent(this, HistoryActivity.class);
+        startActivity(intent);
+    }
+
+    public void startChatActivity (){
+        Log.d("NAVIGATION_MENU", "prøver å åpne Chat activity");
+        Intent intent = new Intent(this, ChatActivity.class);
+        startActivity(intent);
+    }
+
+    public void startNewClaimActivity (){
+        Log.d("NAVIGATION_MENU", "prøver å åpne New Claim activity");
+        Intent intent = new Intent(this, NewClaimActivity.class);
+        startActivity(intent);
+    }
 
     /**
      * The loginButton calls this method.
