@@ -8,4 +8,8 @@
     <string name="homeActivityName">HomeActivity</string>
     <string name="webServerUnavailable">Web Server Unavailable</string>
     <string name="webServerAvailable">Web Server Available</string>
+    <string name="tools">tools</string>
+    <string name="slideshow">slideshow</string>
+    <string name="gallery">gallery</string>
+    <string name="im">import</string>
 </resources>
