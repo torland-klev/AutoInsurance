@@ -36,6 +36,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 public class HomeActivity extends AppCompatActivity implements AsyncResponse{
+    private DrawerLayout drawerLayout;
 
     private String SESSION_ID;
     private String RESULT;
@@ -51,6 +52,11 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
         drawerLayout = findViewById(R.id.drawer_layout);
+
+        Intent mIntent = getIntent();
+        SESSION_ID = mIntent.getStringExtra("SESSION_ID");
+        Log.i("HOME_SESSION_ID", SESSION_ID);
+        getCustomerInfo();
 
 
         //creates a listener for the navigation menu
@@ -104,10 +110,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         }
         return super.onOptionsItemSelected(item);
 
-        Intent mIntent = getIntent();
-        SESSION_ID = mIntent.getStringExtra("SESSION_ID");
-        Log.i("HOME_SESSION_ID", SESSION_ID);
-        getCustomerInfo();
     }
 
     public void logout(View view) {

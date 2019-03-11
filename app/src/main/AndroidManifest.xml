@@ -15,7 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         android:usesCleartextTraffic="true"
-        tools:ignore="GoogleAppIndexingWarning">
+
+    tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".ChatActivity"
             android:label = "ChatActivity"
             android:parentActivityName="HomeActivity">
@@ -40,8 +41,6 @@
                 android:value=
                     "com.example.autoinsurance.NewClaimActivity" />
         </activity>
-        android:usesCleartextTraffic="true">
-        <activity android:name=".NewClaimActivity"></activity>
         <!-- As of API 28, cleartext HTTP is disabled by default. -->
         <activity
             android:name=".HomeActivity"
