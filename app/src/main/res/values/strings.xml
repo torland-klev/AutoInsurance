@@ -17,4 +17,9 @@
     <string name="nav_chat">Chat</string>
     <string name="nav_claim">New claim</string>
     <string name="nav_log_out">Log out</string>
+    <string name="home">Home</string>
+    <string name="logout">Log Out</string>
+    <string name="logout_success">Logout Successfull</string>
+    <string name="logout_unsuccess">Something went wrong while logging out</string>
+    <string name="new_string_resource">Submit New Claim</string>
 </resources>
