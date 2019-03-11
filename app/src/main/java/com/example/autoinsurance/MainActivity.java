@@ -25,6 +25,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     private AccountManager am;
     private Account[] googleAccounts;
     private Account[] allAccounts;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     SDK_VERSION + " does not support autofill.\n");
         }
 
+
         //Test connection
         class MyThread extends Thread implements AsyncResponse{
             private Boolean prevConnected = false;
@@ -107,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         MyThread testConnectionThread = new MyThread();
         testConnectionThread.start();
     }
+
+
+
 
     /**
      * The loginButton calls this method.
