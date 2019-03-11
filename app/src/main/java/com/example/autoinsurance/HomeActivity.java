@@ -77,6 +77,12 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         fillActivity(customer);
     }
 
+    /**
+     * Fills the activity with information about the customer. 
+     *
+     * @param customer HashMap containing the Key-Value pairs of the customer retrieved from the
+     *                 web server.
+     */
     private void fillActivity(HashMap<String, String> customer) {
 
         RelativeLayout rl = findViewById(R.id.home_layout);
