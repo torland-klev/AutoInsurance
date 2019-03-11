@@ -5,19 +5,12 @@ import android.accounts.AccountManager;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Build;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.Switch;
 import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
@@ -31,19 +24,11 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     private AccountManager am;
     private Account[] googleAccounts;
     private Account[] allAccounts;
-    private DrawerLayout drawerLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        // Sets a new toolbar with navigation menu button
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionbar = getSupportActionBar();
-        actionbar.setDisplayHomeAsUpEnabled(true);
-        actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-
 
         //Grab the different Views
         USERNAME = findViewById(R.id.username);
@@ -79,47 +64,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             Log.i("MainActivity", "API version " +
                     SDK_VERSION + " does not support autofill.\n");
         }
-
-        drawerLayout = findViewById(R.id.drawer_layout);
-
-        //creates a listener for the navigation menu
-        NavigationView navigationView = findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(
-                new NavigationView.OnNavigationItemSelectedListener() {
-                    @Override
-                    public boolean onNavigationItemSelected(MenuItem menuItem) {
-                        // set item as selected to persist highlight
-                        menuItem.setChecked(true);
-
-                        // close drawer when item is tapped
-                        drawerLayout.closeDrawers();
-
-                        // Add code here to update the UI based on the item selected
-                        // For example, swap UI fragments here
-                        switch (menuItem.toString()) {
-                            case "Home":
-                                Log.d("NAVIGATION_MENU", "Home");
-                                break;
-                            case "History":
-                                Log.d("NAVIGATION_MENU", "History");
-                                startHistoryActivity();
-                                break;
-                            case "Chat":
-                                Log.d("NAVIGATION_MENU", "Chat");
-                                startChatActivity();
-                                break;
-                            case "New claim":
-                                Log.d("NAVIGATION_MENU", "New claim");
-                                startNewClaimActivity();
-                                break;
-                            case "Log out":
-                                Log.d("NAVIGATION_MENU", "Log out");
-                                break;
-                        }
-
-                        return true;
-                    }
-                });
 
 
         //Test connection
@@ -162,33 +106,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         testConnectionThread.start();
     }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case android.R.id.home:
-                drawerLayout.openDrawer(GravityCompat.START);
-                return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
-    public void startHistoryActivity (){
-        Log.d("NAVIGATION_MENU", "prøver å åpne history activity");
-        Intent intent = new Intent(this, HistoryActivity.class);
-        startActivity(intent);
-    }
 
-    public void startChatActivity (){
-        Log.d("NAVIGATION_MENU", "prøver å åpne Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
-        startActivity(intent);
-    }
-
-    public void startNewClaimActivity (){
-        Log.d("NAVIGATION_MENU", "prøver å åpne New Claim activity");
-        Intent intent = new Intent(this, NewClaimActivity.class);
-        startActivity(intent);
-    }
 
     /**
      * The loginButton calls this method.
