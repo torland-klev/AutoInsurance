@@ -55,7 +55,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:inputType="date"
+        android:clickable="true"
+        android:focusable="false"
+        android:inputType="none"
         app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
@@ -97,10 +99,10 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="8dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginBottom="8dp"
         android:inputType="textCapSentences|textLongMessage|textMultiLine|textAutoCorrect|textAutoComplete"
         android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/button"
+        app:layout_constraintBottom_toTopOf="@+id/nc_result"
         app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
@@ -112,7 +114,17 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
         android:text="@string/submit"
+        android:onClick="submitNewClaim"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <TextView
+        android:id="@+id/nc_result"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@+id/button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
 

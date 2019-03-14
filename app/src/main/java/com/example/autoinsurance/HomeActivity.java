@@ -223,6 +223,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     public void startNewClaimActivity (){
         Log.d("NAVIGATION_MENU", "Tries to open New Claim activity");
         Intent intent = new Intent(this, NewClaimActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
         startActivity(intent);
     }
 

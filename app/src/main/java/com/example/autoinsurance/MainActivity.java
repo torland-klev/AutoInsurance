@@ -165,9 +165,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
     }
 
-    private void navigateToHomeScreen(String extra) {
+    private void navigateToHomeScreen(String sessionID) {
         Intent homeScreenIntent = new Intent(this, HomeActivity.class);
-        homeScreenIntent.putExtra("SESSION_ID", extra);
+        homeScreenIntent.putExtra("SESSION_ID", sessionID);
         startActivityForResult(homeScreenIntent, BOOLEAN_REQUEST);
     }
     @Override
