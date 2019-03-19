@@ -1,131 +1,167 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nc_drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".NewClaimActivity">
+    android:fitsSystemWindows="true">
 
-    <TextView
-        android:id="@+id/tv_new_claim"
+    <FrameLayout
+        android:id="@+id/content_frame"
+
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/nc_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.ActionBar" />
+
+    </FrameLayout>
+    <!-- Layout to contain contents of main body of screen (drawer will slide over this) -->
+    <android.support.constraint.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:context=".NewClaimActivity">
+
+        <TextView
+            android:id="@+id/tv_new_claim"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="64dp"
+            android:layout_marginEnd="8dp"
+            android:text="@string/new_string_resource"
+            android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/nc_tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/title"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/tv_new_claim" />
+
+        <EditText
+            android:id="@+id/nc_et_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:inputType="textCapSentences|textAutoCorrect|textAutoComplete"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_tv_title" />
+
+        <TextView
+            android:id="@+id/nc_tv_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/date"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_et_title" />
+
+        <EditText
+            android:id="@+id/nc_et_date"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:clickable="true"
+            android:focusable="false"
+            android:inputType="none"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_tv_date" />
+
+        <TextView
+            android:id="@+id/nc_tv_plate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/plate_nr"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_et_date" />
+
+        <EditText
+            android:id="@+id/nc_et_plate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:inputType="text"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_tv_plate" />
+
+        <TextView
+            android:id="@+id/nc_tv_description"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/description"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_et_plate" />
+
+        <EditText
+            android:id="@+id/nc_et_description"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:inputType="textCapSentences|textLongMessage|textMultiLine|textAutoCorrect|textAutoComplete"
+            android:scrollbars="vertical"
+            app:layout_constraintBottom_toTopOf="@+id/nc_result"
+            app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
+            app:layout_constraintHorizontal_bias="0.0"
+            app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
+            app:layout_constraintTop_toBottomOf="@+id/nc_tv_description" />
+
+        <Button
+            android:id="@+id/button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:onClick="submitNewClaim"
+            android:text="@string/submit"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <TextView
+            android:id="@+id/nc_result"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toTopOf="@+id/button"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </android.support.constraint.ConstraintLayout>
+    <!-- Container for contents of drawer - use NavigationView to make configuration easier -->
+
+    <android.support.design.widget.NavigationView
+        android:id="@+id/nc_nav_view"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="8dp"
-        android:layout_marginTop="32dp"
-        android:layout_marginEnd="8dp"
-        android:text="@string/new_string_resource"
-        android:textAppearance="@android:style/TextAppearance.DeviceDefault.Large"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        android:fitsSystemWindows="true"
+        app:headerLayout="@layout/nav_header"
+        app:menu="@menu/drawer_view" />
 
-    <TextView
-        android:id="@+id/nc_tv_title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/title"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/tv_new_claim" />
-
-    <EditText
-        android:id="@+id/nc_et_title"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:inputType="textCapSentences|textAutoCorrect|textAutoComplete"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_tv_title" />
-
-    <TextView
-        android:id="@+id/nc_tv_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/date"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_et_title" />
-
-    <EditText
-        android:id="@+id/nc_et_date"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:clickable="true"
-        android:focusable="false"
-        android:inputType="none"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_tv_date" />
-
-    <TextView
-        android:id="@+id/nc_tv_plate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/plate_nr"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_et_date" />
-
-    <EditText
-        android:id="@+id/nc_et_plate"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_tv_plate" />
-
-    <TextView
-        android:id="@+id/nc_tv_description"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
-        android:text="@string/description"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_et_plate" />
-
-    <EditText
-        android:id="@+id/nc_et_description"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginBottom="8dp"
-        android:inputType="textCapSentences|textLongMessage|textMultiLine|textAutoCorrect|textAutoComplete"
-        android:scrollbars="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/nc_result"
-        app:layout_constraintEnd_toEndOf="@+id/tv_new_claim"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="@+id/tv_new_claim"
-        app:layout_constraintTop_toBottomOf="@+id/nc_tv_description" />
-
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        android:text="@string/submit"
-        android:onClick="submitNewClaim"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/nc_result"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="8dp"
-        app:layout_constraintBottom_toTopOf="@+id/button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-</android.support.constraint.ConstraintLayout>
+</android.support.v4.widget.DrawerLayout>

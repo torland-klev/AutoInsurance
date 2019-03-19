@@ -30,4 +30,6 @@
     <string name="claim_submitted">Claim submitted</string>
     <string name="something_went_wrong">Something went wrong</string>
     <string name="autoinsurance_account">AutoInsurance Account</string>
+    <string name="claim_history">Claim History</string>
+    <string name="menu">Menu</string>
 </resources>

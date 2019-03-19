@@ -144,6 +144,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     }
 
     private void loginAuto(){
+        //Displays dialog to user, where user can choose to pick account
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("Login");
