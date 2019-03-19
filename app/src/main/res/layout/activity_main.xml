@@ -81,47 +81,6 @@
             app:layout_constraintTop_toBottomOf="@+id/tv_login"
             tools:ignore="Autofill" />
 
-        <ImageButton
-            android:id="@+id/facebookLogo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/facebook_logo"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/googleLogo"
-            app:layout_constraintStart_toStartOf="@+id/password"
-            app:layout_constraintTop_toBottomOf="@+id/login_button"
-            app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/facebook_logo"
-            android:onClick="loginFacebook"/>
-
-        <ImageButton
-            android:id="@+id/googleLogo"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginBottom="8dp"
-            android:adjustViewBounds="true"
-            android:background="@android:color/transparent"
-            android:contentDescription="@string/facebook_logo"
-            android:scaleType="fitCenter"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="@+id/password"
-            app:layout_constraintHorizontal_bias="0.674"
-            app:layout_constraintStart_toEndOf="@+id/facebookLogo"
-            app:layout_constraintTop_toBottomOf="@+id/login_button"
-            app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/google_logo"
-            android:onClick="loginGoogle"/>
-
         <Button
             android:id="@+id/login_button"
             android:layout_width="0dp"
