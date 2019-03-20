@@ -1,6 +1,7 @@
 package com.example.autoinsurance;
 
 import android.content.Intent;
+import android.graphics.Typeface;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
@@ -11,60 +12,46 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
-import android.view.MenuItem;
-
-
-import android.app.Activity;
-import android.content.Intent;
-import android.graphics.Typeface;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
+import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
+import android.widget.Button;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.kobjects.util.Strings;
-import org.w3c.dom.Text;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-public class HomeActivity extends AppCompatActivity implements AsyncResponse{
+public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     private DrawerLayout drawerLayout;
-
-    private String SESSION_ID;
     private final int LOGOUT_CODE = 5;
+    private String SESSION_ID;
+    private String CLAIM_ID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_home);
+        setContentView(R.layout.activity_claim);
         // Sets a new toolbar with navigation menu button
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.claim_toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        drawerLayout = findViewById(R.id.drawer_layout);
+        drawerLayout = findViewById(R.id.history_drawer_layout);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         Intent mIntent = getIntent();
+        CLAIM_ID = mIntent.getStringExtra("CLAIM_ID");
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
-        Log.i("HOME_SESSION_ID", SESSION_ID);
-        getCustomerInfo();
-
+        Log.i("CLAIM_SESSION_ID", SESSION_ID);
+        Log.i("CLAIM_ID", CLAIM_ID);
 
         //creates a listener for the navigation menu
-        NavigationView navigationView = findViewById(R.id.nav_view);
+        NavigationView navigationView = findViewById(R.id.claim_nav_view);
         navigationView.setNavigationItemSelectedListener(
                 new NavigationView.OnNavigationItemSelectedListener() {
                     @Override
@@ -102,9 +89,9 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
                         return true;
                     }
-                });
-
-
+                }
+        );
+        getClaim();
     }
 
     @Override
@@ -115,7 +102,13 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                 return true;
         }
         return super.onOptionsItemSelected(item);
+    }
 
+    private void getClaim(){
+        AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
+        asyncTask.delegate = this;
+        String[] args = {"getClaimInfo", SESSION_ID, CLAIM_ID};
+        asyncTask.execute(args);
     }
 
     public void logout() {
@@ -125,15 +118,44 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.execute(args);
     }
 
-    private void getCustomerInfo(){
-        AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
-        asyncTask.delegate = this;
-        String[] args = {"getCustomerInfo", SESSION_ID};
-        asyncTask.execute(args);
+    private void startHomeActivity() {
+        Log.d("NAVIGATION_MENU", "Tries to open home activity");
+        Intent intent = new Intent(this, HomeActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
+        startActivityForResult(intent, LOGOUT_CODE);
     }
 
+    public void startHistoryActivity() {
+        Log.d("NAVIGATION_MENU", "Tries to open history activity");
+        Intent intent = new Intent(this, HistoryActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
+        startActivityForResult(intent, LOGOUT_CODE);
+    }
 
-    //Called from onCreate()
+    public void startChatActivity() {
+        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
+        startActivityForResult(intent, LOGOUT_CODE);
+    }
+
+    public void startNewClaimActivity() {
+        Log.d("NAVIGATION_MENU", "Tries to open New Claim activity");
+        Intent intent = new Intent(this, NewClaimActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
+        startActivityForResult(intent, LOGOUT_CODE);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == LOGOUT_CODE) {
+            if (resultCode == RESULT_OK) {
+                setResult(RESULT_OK, new Intent());
+                finish();
+            }
+        }
+    }
+
     @Override
     public void processFinish(String output) {
         //User clicks LogOut
@@ -158,14 +180,14 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     }
 
     /**
-     * Fills the activity with information about the customer. 
+     * Fills the activity with information about the customer.
      *
      * @param customer HashMap containing the Key-Value pairs of the customer retrieved from the
      *                 web server.
      */
     private void fillActivity(HashMap<String, String> customer) {
 
-        int c = 0;
+        int c = 400;
         final int KEY = 100;
         for (Map.Entry<String, String> pair : customer.entrySet()) {
 
@@ -186,7 +208,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
             key.setId(c+KEY);
 
             //Add new views
-            ConstraintLayout layout = findViewById(R.id.home_layout);
+            ConstraintLayout layout = findViewById(R.id.claim_layout);
             ConstraintSet set = new ConstraintSet();
 
             layout.addView(value, 0);
@@ -199,11 +221,12 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                     TypedValue.COMPLEX_UNIT_DIP, size_dp, getResources()
                             .getDisplayMetrics());
 
-            set.connect(c+KEY, ConstraintSet.END, R.id.home_title, ConstraintSet.START);
-            set.connect(c, ConstraintSet.START, R.id.home_title, ConstraintSet.END);
-            if (c == 1) {
-                set.connect(c, ConstraintSet.TOP, R.id.home_title, ConstraintSet.BOTTOM, dp*2);
-                set.connect(c+KEY, ConstraintSet.TOP, R.id.home_title, ConstraintSet.BOTTOM, dp*2);
+            set.connect(c+KEY, ConstraintSet.END, R.id.claim_title, ConstraintSet.START);
+            set.connect(c, ConstraintSet.START, R.id.claim_title, ConstraintSet.END);
+            set.connect(R.id.back_button, ConstraintSet.TOP, c, ConstraintSet.BOTTOM);
+            if (c == 401) {
+                set.connect(c, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*2);
+                set.connect(c+KEY, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*2);
             } else {
                 set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
                 set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
@@ -212,40 +235,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         }
     }
 
-    public void startHistoryActivity (){
-        Log.d("NAVIGATION_MENU", "Tries to open history activity");
-        Intent intent = new Intent(this, HistoryActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
+    public void goBack(View view) {
+        finish();
     }
-
-    public void startChatActivity (){
-        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-
-    public void startNewClaimActivity (){
-        Log.d("NAVIGATION_MENU", "Tries to open New Claim activity");
-        Intent intent = new Intent(this, NewClaimActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-    private void startHomeActivity() {
-        Log.d("NAVIGATION_MENU", "Tries to open home activity");
-        Intent intent = new Intent(this, HomeActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (requestCode == LOGOUT_CODE){
-            if (resultCode == RESULT_OK){
-                setResult(RESULT_OK, new Intent());
-                finish();
-            }
-        }
-    }
-
 }

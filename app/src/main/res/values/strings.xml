@@ -7,6 +7,7 @@
     <string name="loginSuccess">Login success</string>
     <string name="homeActivityName">HomeActivity</string>
     <string name="webServerUnavailable">Web Server Unavailable</string>
+    <string name="webServerUnavailableLogin">Web Server Unavailable, please try again later</string>
     <string name="webServerAvailable">Web Server Available</string>
     <string name="tools">tools</string>
     <string name="slideshow">slideshow</string>
@@ -32,4 +33,6 @@
     <string name="autoinsurance_account">AutoInsurance Account</string>
     <string name="claim_history">Claim History</string>
     <string name="menu">Menu</string>
+    <string name="claim">Claim</string>
+    <string name="back">Back</string>
 </resources>
