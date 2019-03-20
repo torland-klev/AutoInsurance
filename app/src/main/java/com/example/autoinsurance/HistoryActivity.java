@@ -217,6 +217,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             key.setClickable(true);
 
             //Add new views
+
             ConstraintLayout layout = findViewById(R.id.history_layout);
             ConstraintSet set = new ConstraintSet();
 

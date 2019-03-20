@@ -41,7 +41,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
         ActionBar actionbar = getSupportActionBar();
         actionbar.setDisplayHomeAsUpEnabled(true);
         actionbar.setHomeAsUpIndicator(R.drawable.ic_menu);
-        drawerLayout = findViewById(R.id.history_drawer_layout);
+        drawerLayout = findViewById(R.id.claim_drawer_layout);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
         Intent mIntent = getIntent();
