@@ -30,6 +30,7 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
     private Intent mIntent;
     private String SESSION_ID;
     private final int LOGOUT_CODE = 5;
+    private boolean NEW_CLAIM_SUBMITTED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -130,6 +131,7 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
         String date  = DATE.getText().toString();
         String plate = PLATE.getText().toString();
         String desc  = DESCRIPTION.getText().toString();
+        NEW_CLAIM_SUBMITTED = true;
         Boolean f = false;
 
         if (title.length() < 6){
@@ -172,11 +174,11 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
     @Override
     public void processFinish(String output) {
         //User clicks LogOut
-        if (output.equals("true")) {
+        if (output.equals("true") && !NEW_CLAIM_SUBMITTED) {
             setResult(RESULT_OK, new Intent());
             finish();
         }
-
+        NEW_CLAIM_SUBMITTED = false;
         TextView tv = findViewById(R.id.nc_result);
         if(output.equals("true")){
             tv.setText(getString(R.string.claim_submitted));

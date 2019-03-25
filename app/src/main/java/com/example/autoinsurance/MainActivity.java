@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             case "-1":
                 LOGIN_STATUS.setVisibility(View.VISIBLE);
                 LOGIN_STATUS.setTextColor(Color.RED);
-                LOGIN_STATUS.setText(getString(R.string.webServerUnavailable));
+                LOGIN_STATUS.setText(getString(R.string.webServerUnavailableLogin));
                 break;
             default:
                 LOGIN_STATUS.setVisibility(View.VISIBLE);
