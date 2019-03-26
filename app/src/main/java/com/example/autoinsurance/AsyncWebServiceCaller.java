@@ -48,8 +48,7 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
     //Simple connection checker;
     private Boolean testConnection(){
-        int TIMEOUT = MainActivity.CONNECTION_TEST_TIMEOUT;
-        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL, TIMEOUT);
+        HttpTransportSE androidHttpTransport = new HttpTransportSE(URL, 2000);
         try {
             androidHttpTransport.getServiceConnection().getResponseCode();
             return true;

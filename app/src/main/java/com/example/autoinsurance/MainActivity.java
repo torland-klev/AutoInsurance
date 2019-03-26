@@ -17,9 +17,9 @@ import android.widget.TextView;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
-    public static final int CONNECTION_TEST_TIMEOUT = 4000;
     private final int BOOLEAN_REQUEST = 1;
     private final int ACCOUNT_PICKER = 2;
+    private MyThread testConnectionThread;
     private EditText USERNAME;
     private EditText PASSWORD;
     private TextView LOGIN_STATUS;
@@ -68,42 +68,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
 
         //Test connection
-        class MyThread extends Thread implements AsyncResponse{
-            private Boolean prevConnected = false;
-            public void run(){
-                while(true) {
-                    Log.i("TestConnection", "Testing connection.\n");
-                    AsyncWebServiceCaller testConnection = new AsyncWebServiceCaller();
-                    testConnection.delegate = this;
-                    testConnection.execute("TEST_CONNECTION");
-                    try {
-                        //If connection was previously established, take 3 times longer between testing
-                        if (prevConnected){
-                            Thread.sleep(CONNECTION_TEST_TIMEOUT * 2);
-                        }
-                        Thread.sleep(CONNECTION_TEST_TIMEOUT);
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
 
-            @Override
-            public void processFinish(String output) {
-                if (output.equals("0")) {
-                    prevConnected = false;
-                    CONNECTION_STATUS.setVisibility(View.VISIBLE);
-                    CONNECTION_STATUS.setTextColor(Color.RED);
-                    CONNECTION_STATUS.setText(getString(R.string.webServerUnavailable));
-                } else {
-                    prevConnected = true;
-                    CONNECTION_STATUS.setVisibility(View.VISIBLE);
-                    CONNECTION_STATUS.setTextColor(Color.GREEN);
-                    CONNECTION_STATUS.setText(getString(R.string.webServerAvailable));
-                }
-            }
-        }
-        MyThread testConnectionThread = new MyThread();
+        testConnectionThread = new MyThread(CONNECTION_STATUS);
         testConnectionThread.start();
     }
 
@@ -133,14 +99,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
         String[] args = {"login", username, password};
         asyncTask.execute(args);
-    }
-
-    //TODO: login from Google account
-    public void loginGoogle(View view) {
-    }
-
-    //TODO: login from Facebook account
-    public void loginFacebook(View view) {
     }
 
     private void loginAuto(){
@@ -200,6 +158,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 LOGIN_STATUS.setTextColor(Color.GREEN);
                 LOGIN_STATUS.setText(getString(R.string.loginSuccess));
                 addAccount();
+                testConnectionThread.shutdown = true;
                 navigateToHomeScreen(output);
                 break;
         }

@@ -1,6 +1,9 @@
 package com.example.autoinsurance;
 
+import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
+import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
@@ -34,6 +37,14 @@ import org.json.JSONObject;
 import org.kobjects.util.Strings;
 import org.w3c.dom.Text;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -60,7 +71,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         Intent mIntent = getIntent();
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
         Log.i("HOME_SESSION_ID", SESSION_ID);
-        getCustomerInfo();
 
 
         //creates a listener for the navigation menu
@@ -104,6 +114,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                     }
                 });
 
+        getCustomerInfo();
 
     }
 
@@ -125,7 +136,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.execute(args);
     }
 
-    private void getCustomerInfo(){
+    public void getCustomerInfo(){
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
         asyncTask.delegate = this;
         String[] args = {"getCustomerInfo", SESSION_ID};
@@ -136,25 +147,72 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     //Called from onCreate()
     @Override
     public void processFinish(String output) {
+        //Server went offline
+        String filename = "/homecache.tmp";
+        if (output.equals("-1")){
+
+            ConstraintLayout layout = findViewById(R.id.home_layout);
+            ConstraintSet set = new ConstraintSet();
+            TextView status = new TextView(this);
+            status.setId(R.id.connectionStatus);
+            status.setVisibility(View.VISIBLE);
+            status.setTextColor(Color.RED);
+            layout.addView(status, 0);
+            set.clone(layout);
+            set.connect(status.getId(), ConstraintSet.END, R.id.home_title, ConstraintSet.START);
+            set.connect(status.getId(), ConstraintSet.START, R.id.home_title, ConstraintSet.END);
+            set.connect(status.getId(), ConstraintSet.BOTTOM, R.id.home_layout, ConstraintSet.BOTTOM, 100);
+            set.applyTo(layout);
+
+            try {
+                FileInputStream fis = new FileInputStream(this.getCacheDir() + filename);
+                Log.d("HOME CACHE", "Cache was opened");
+                ObjectInputStream obj = new ObjectInputStream(fis);
+                status.setText(getString(R.string.webServerUnavailableCache));
+                fillActivity((HashMap<String, String>) obj.readObject());
+            } catch (Exception e) {
+                Log.d("HOME CACHE", "Cache open failed");
+                status.setText(getString(R.string.webServerUnavailable));
+                e.printStackTrace();
+            }
+        }
+
         //User clicks LogOut
-        if (output.equals("true")) {
+        else if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
             finish();
         }
-
-        //Storing customer data in a HashMap. May be useful to have it stored later.
-        HashMap<String, String> customer = new HashMap<>();
-        try {
-            JSONObject obj  = new JSONObject(output);
-            Iterator<String> keys = obj.keys();
-            while (keys.hasNext()){
-                String s = keys.next();
-                customer.put(s, obj.getString(s));
+        else {
+            //Storing customer data in a HashMap. Makes it easier to store in cache.
+            HashMap<String, String> customer = new HashMap<>();
+            try {
+                JSONObject obj = new JSONObject(output);
+                Iterator<String> keys = obj.keys();
+                while (keys.hasNext()) {
+                    String s = keys.next();
+                    customer.put(s, obj.getString(s));
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
+
+            //Store customer in cache
+
+            try {
+                File f = new File(this.getCacheDir() + filename);
+                FileOutputStream out = new FileOutputStream(f);
+                ObjectOutputStream obj = new ObjectOutputStream(out);
+                obj.writeObject(customer);
+                obj.close();
+                Log.d("HOME CACHE", "Cache was written " + f.getAbsolutePath());
+            } catch (IOException e) {
+                Log.d("HOME CACHE", "Cache writing failed");
+                e.printStackTrace();
+            }
+
+
+            fillActivity(customer);
         }
-        fillActivity(customer);
     }
 
     /**

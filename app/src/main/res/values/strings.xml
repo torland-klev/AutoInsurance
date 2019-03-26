@@ -6,7 +6,8 @@
     <string name="loginFailed">Login failed</string>
     <string name="loginSuccess">Login success</string>
     <string name="homeActivityName">HomeActivity</string>
-    <string name="webServerUnavailable">Web Server Unavailable</string>
+    <string name="webServerUnavailableCache">Web Server Unavailable\nValues from cache loaded</string>
+    <string name="webServerUnavailable">Web Server Unavailable\nNo local cache found\nReload to try again</string>
     <string name="webServerUnavailableLogin">Web Server Unavailable, please try again later</string>
     <string name="webServerAvailable">Web Server Available</string>
     <string name="tools">tools</string>

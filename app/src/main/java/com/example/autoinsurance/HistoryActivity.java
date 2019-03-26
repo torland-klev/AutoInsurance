@@ -2,6 +2,7 @@ package com.example.autoinsurance;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
@@ -21,6 +22,12 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -155,12 +162,40 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
 
     @Override
     public void processFinish(String output) {
+        //Server went offline
+        String filename = "/historycache.tmp";
+        if (output.equals("-1")){
+
+            ConstraintLayout layout = findViewById(R.id.history_layout);
+            ConstraintSet set = new ConstraintSet();
+            TextView status = new TextView(this);
+            status.setId(R.id.connectionStatus);
+            status.setVisibility(View.VISIBLE);
+            status.setTextColor(Color.RED);
+            layout.addView(status, 0);
+            set.clone(layout);
+            set.connect(status.getId(), ConstraintSet.END, R.id.history_title, ConstraintSet.START);
+            set.connect(status.getId(), ConstraintSet.START, R.id.history_title, ConstraintSet.END);
+            set.connect(status.getId(), ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM);
+            set.applyTo(layout);
+
+            try {
+                FileInputStream fis = new FileInputStream(this.getCacheDir() + filename);
+                Log.d("HOME CACHE", "Cache was opened");
+                ObjectInputStream obj = new ObjectInputStream(fis);
+                status.setText(getString(R.string.webServerUnavailableCache));
+                fillActivity((HashMap<String, String>) obj.readObject());
+            } catch (Exception e) {
+                Log.d("HOME CACHE", "Cache open failed");
+                status.setText(getString(R.string.webServerUnavailable));
+                e.printStackTrace();
+            }
+        }
         //User clicks LogOut
         if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
             finish();
         }
-
         //Puts output from form [{.1.},{.2.},...,{.N.}]
         //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
         output = output.substring(1, output.length()-1);
@@ -190,6 +225,21 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         } catch (JSONException e) {
             e.printStackTrace();
         }
+
+        //Store claims in cache
+
+        try {
+            File f = new File(this.getCacheDir() + filename);
+            FileOutputStream out = new FileOutputStream(f);
+            ObjectOutputStream obj = new ObjectOutputStream(out);
+            obj.writeObject(claims);
+            obj.close();
+            Log.d("HOME CACHE", "Cache was written " + f.getAbsolutePath());
+        } catch (IOException e) {
+            Log.d("HOME CACHE", "Cache writing failed");
+            e.printStackTrace();
+        }
+
         fillActivity(claims);
     }
     private void fillActivity(HashMap<String, String> customer) {
@@ -215,6 +265,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             key.setText(pair.getKey());
             key.setId(c+KEY);
             key.setClickable(true);
+            setOnClick(value, this, value.getId()-s);
 
             //Add new views
 
@@ -235,8 +286,8 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             set.connect(c, ConstraintSet.START, c+KEY, ConstraintSet.END, dp);
             set.connect(c, ConstraintSet.END, R.id.history_title, ConstraintSet.END, dp);
             if (Integer.parseInt(pair.getKey()) == 1) {
-                set.connect(c, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*2);
-                set.connect(c+KEY, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*2);
+                set.connect(c, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*5);
+                set.connect(c+KEY, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*5);
             } else {
                 set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
                 set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
