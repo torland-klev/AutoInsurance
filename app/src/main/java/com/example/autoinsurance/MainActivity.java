@@ -15,6 +15,18 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.TextView;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.util.HashMap;
+
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private final int BOOLEAN_REQUEST = 1;
@@ -29,6 +41,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     private Account[] auAccounts;
     private String username;
     private String password;
+    private String filename = "/sessionid.tmp";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,6 +73,26 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     SDK_VERSION + " does not support autofill.\n");
         }
 
+        //Test connection
+
+        testConnectionThread = new MyThread(CONNECTION_STATUS);
+        testConnectionThread.start();
+
+        //Check if user has previous sessionID
+        try {
+            File f = new File(this.getCacheDir() + filename);
+            BufferedReader in = new BufferedReader(new FileReader(f));
+            Log.d("MAIN CACHE", "Cache was opened");
+            String sessionID = in.readLine();
+            in.close();
+            Log.d("SESSIONID", sessionID);
+            navigateToHomeScreen(sessionID);
+
+        } catch (Exception e) {
+            Log.d("MAIN CACHE", "Cache open failed");
+            e.printStackTrace();
+        }
+
         //Check for accounts
         am = AccountManager.get(this);
         auAccounts = am.getAccountsByType("com.AutoInsurance");
@@ -67,10 +100,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             loginAuto();
         }
 
-        //Test connection
-
-        testConnectionThread = new MyThread(CONNECTION_STATUS);
-        testConnectionThread.start();
     }
 
 
@@ -159,6 +188,18 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 LOGIN_STATUS.setText(getString(R.string.loginSuccess));
                 addAccount();
                 testConnectionThread.shutdown = true;
+                // Write sessionID to cache
+                try {
+                    File f = new File(this.getCacheDir() + filename);
+                    BufferedWriter out = new BufferedWriter(new FileWriter(f));
+                    out.write(output);
+                    out.append("\n");
+                    out.close();
+                    Log.d("MAIN CACHE", "Cache was written " + f.getAbsolutePath());
+                } catch (IOException e) {
+                    Log.d("MAIN CACHE", "Cache writing failed");
+                    e.printStackTrace();
+                }
                 navigateToHomeScreen(output);
                 break;
         }
@@ -188,9 +229,12 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d("onActivityResult", "Was run");
         super.onActivityResult(requestCode, resultCode, data);
+        // Logout
         if (requestCode == BOOLEAN_REQUEST) {
             if (resultCode == RESULT_OK) {
                 LOGIN_STATUS.setText(getString(R.string.logout_success));
+                File f = new File(this.getCacheDir() + filename);
+                f.delete();
                 LOGIN_STATUS.setTextColor(Color.BLUE);
             } else {
                 LOGIN_STATUS.setText(getString(R.string.logout_unsuccess));

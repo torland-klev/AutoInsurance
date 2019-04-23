@@ -96,10 +96,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                                 Log.d("NAVIGATION_MENU", "History");
                                 startHistoryActivity();
                                 break;
-                            case "Chat":
-                                Log.d("NAVIGATION_MENU", "Chat");
-                                startChatActivity();
-                                break;
                             case "New claim":
                                 Log.d("NAVIGATION_MENU", "New claim");
                                 startNewClaimActivity();
@@ -180,6 +176,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         //User clicks LogOut
         else if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
             finish();
         }
         else {
@@ -273,13 +270,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     public void startHistoryActivity (){
         Log.d("NAVIGATION_MENU", "Tries to open history activity");
         Intent intent = new Intent(this, HistoryActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-
-    public void startChatActivity (){
-        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("SESSION_ID", SESSION_ID);
         startActivityForResult(intent, LOGOUT_CODE);
     }

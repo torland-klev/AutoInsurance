@@ -1,7 +1,10 @@
 package com.example.autoinsurance;
 
+import android.annotation.SuppressLint;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.renderscript.Sampler;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
@@ -21,6 +24,12 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -73,10 +82,6 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                                 Log.d("NAVIGATION_MENU", "History");
                                 startHistoryActivity();
                                 break;
-                            case "Chat":
-                                Log.d("NAVIGATION_MENU", "Chat");
-                                startChatActivity();
-                                break;
                             case "New claim":
                                 Log.d("NAVIGATION_MENU", "New claim");
                                 startNewClaimActivity();
@@ -92,6 +97,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 }
         );
         getClaim();
+        getChat();
     }
 
     @Override
@@ -108,6 +114,13 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
         asyncTask.delegate = this;
         String[] args = {"getClaimInfo", SESSION_ID, CLAIM_ID};
+        asyncTask.execute(args);
+    }
+
+    private void getChat(){
+        AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
+        asyncTask.delegate = this;
+        String[] args = {"listClaimMessages", SESSION_ID, CLAIM_ID};
         asyncTask.execute(args);
     }
 
@@ -132,13 +145,6 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
         startActivityForResult(intent, LOGOUT_CODE);
     }
 
-    public void startChatActivity() {
-        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-
     public void startNewClaimActivity() {
         Log.d("NAVIGATION_MENU", "Tries to open New Claim activity");
         Intent intent = new Intent(this, NewClaimActivity.class);
@@ -156,40 +162,111 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
         }
     }
 
+    @SuppressLint("ResourceType")
     @Override
     public void processFinish(String output) {
+        //Server went offline
+        String filename = "/claimcache" + CLAIM_ID + ".tmp";
+        if (output.equals("-1")){
+
+            ConstraintLayout layout = findViewById(R.id.claim_layout);
+            ConstraintSet set = new ConstraintSet();
+            TextView status = new TextView(this);
+            status.setId(R.id.connectionStatus);
+            status.setVisibility(View.VISIBLE);
+            status.setTextColor(Color.RED);
+            layout.addView(status, 0);
+            set.clone(layout);
+            set.connect(status.getId(), ConstraintSet.END, R.id.claim_title, ConstraintSet.START);
+            set.connect(status.getId(), ConstraintSet.START, R.id.claim_title, ConstraintSet.END);
+            set.connect(status.getId(), ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM);
+            set.applyTo(layout);
+
+            try {
+                FileInputStream fis = new FileInputStream(this.getCacheDir() + filename);
+                Log.d("CLAIM CACHE", "Cache was opened");
+                ObjectInputStream obj = new ObjectInputStream(fis);
+                status.setText(getString(R.string.webServerUnavailableCache));
+                fillActivity((HashMap<String, String>) obj.readObject());
+            } catch (Exception e) {
+                Log.d("CLAIM CACHE", "Cache open failed");
+                status.setText(getString(R.string.webServerUnavailable));
+                e.printStackTrace();
+            }
+        }
         //User clicks LogOut
         if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
             finish();
         }
 
-        //Storing customer data in a HashMap. May be useful to have it stored later.
-        HashMap<String, String> customer = new HashMap<>();
+        //Storing claim data in a HashMap. May be useful to have it stored later.
+        HashMap<String, String> claim = new HashMap<>();
         try {
-            JSONObject obj  = new JSONObject(output);
-            Iterator<String> keys = obj.keys();
-            while (keys.hasNext()){
-                String s = keys.next();
-                customer.put(s, obj.getString(s));
+
+            // Get chat history of claim
+            if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
+                //Puts output from form [{.1.},{.2.},...,{.N.}]
+                //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
+                output = output.substring(1, output.length() - 1);
+                String messages[] = output.split("\\},");
+                for (int i = 0; i < messages.length; i++) {
+                    messages[i] = messages[i] + "}";
+                }
+                // Display how many messages are in the claim
+                TextView tv = findViewById(R.id.nrOfMessages);
+                String displayText = getString(R.string.nrOfMessages) + messages.length;
+                tv.setText(displayText);
             }
-        } catch (JSONException e) {
+            // No messages found for claim
+            else if (output.length() < 6){
+                TextView tv = findViewById(R.id.nrOfMessages);
+                String displayText = getString(R.string.nrOfMessages) + "0";
+                tv.setText(displayText);
+            }
+            // Get the information of the claim
+            else {
+
+                JSONObject obj = new JSONObject(output);
+                Iterator<String> keys = obj.keys();
+                while (keys.hasNext()) {
+                    String s = keys.next();
+                    claim.put(s, obj.getString(s));
+                }
+
+                try {
+                    File f = new File(this.getCacheDir() + filename);
+                    FileOutputStream out = new FileOutputStream(f);
+                    ObjectOutputStream obj2 = new ObjectOutputStream(out);
+                    obj2.writeObject(claim);
+                    obj2.close();
+                    Log.d("CLAIM CACHE", "Cache was written " + f.getAbsolutePath());
+                } catch (IOException e) {
+                    Log.d("CLAIM CACHE", "Cache writing failed");
+                    e.printStackTrace();
+                }
+            }
+        }
+        catch (JSONException e) {
             e.printStackTrace();
         }
-        fillActivity(customer);
+        //Store claims in cache
+
+        fillActivity(claim);
     }
 
     /**
-     * Fills the activity with information about the customer.
+     * Fills the activity with information about the claim.
      *
-     * @param customer HashMap containing the Key-Value pairs of the customer retrieved from the
+     * @param claim HashMap containing the Key-Value pairs of the claim retrieved from the
      *                 web server.
      */
-    private void fillActivity(HashMap<String, String> customer) {
+    private void fillActivity(HashMap<String, String> claim) {
 
         int c = 400;
         final int KEY = 100;
-        for (Map.Entry<String, String> pair : customer.entrySet()) {
+        for (Map.Entry<String, String> pair : claim.entrySet()) {
 
             //C is used for TextView ID's
             c++;
@@ -225,8 +302,8 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             set.connect(c, ConstraintSet.START, R.id.claim_title, ConstraintSet.END);
             set.connect(R.id.back_button, ConstraintSet.TOP, c, ConstraintSet.BOTTOM);
             if (c == 401) {
-                set.connect(c, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*2);
-                set.connect(c+KEY, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*2);
+                set.connect(c, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*5);
+                set.connect(c+KEY, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*5);
             } else {
                 set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
                 set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
@@ -237,5 +314,12 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
 
     public void goBack(View view) {
         finish();
+    }
+
+    public void toChat(View view) {
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("SESSION_ID", SESSION_ID);
+        intent.putExtra("CLAIM_ID", CLAIM_ID);
+        startActivityForResult(intent, LOGOUT_CODE);
     }
 }

@@ -36,4 +36,7 @@
     <string name="menu">Menu</string>
     <string name="claim">Claim</string>
     <string name="back">Back</string>
+    <string name="chat">Chat</string>
+    <string name="nrOfMessages">Number of messages: </string>
+    <string name="see_messages">See messages</string>
 </resources>

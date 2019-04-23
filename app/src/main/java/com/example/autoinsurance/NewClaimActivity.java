@@ -71,10 +71,6 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
                                 Log.d("NAVIGATION_MENU", "History");
                                 startHistoryActivity();
                                 break;
-                            case "Chat":
-                                Log.d("NAVIGATION_MENU", "Chat");
-                                startChatActivity();
-                                break;
                             case "New claim":
                                 Log.d("NAVIGATION_MENU", "New claim");
                                 startNewClaimActivity();
@@ -176,6 +172,7 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
         //User clicks LogOut
         if (output.equals("true") && !NEW_CLAIM_SUBMITTED) {
             setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
             finish();
         }
         NEW_CLAIM_SUBMITTED = false;
@@ -183,6 +180,10 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
         if(output.equals("true")){
             tv.setText(getString(R.string.claim_submitted));
             tv.setTextColor(Color.GREEN);
+            TITLE.setText("");
+            DATE.setText("");
+            PLATE.setText("");
+            DESCRIPTION.setText("");
         }
         else{
             tv.setText(getString(R.string.something_went_wrong));
@@ -207,13 +208,6 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
     public void startHistoryActivity (){
         Log.d("NAVIGATION_MENU", "Tries to open history activity");
         Intent intent = new Intent(this, HistoryActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-
-    public void startChatActivity (){
-        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("SESSION_ID", SESSION_ID);
         startActivityForResult(intent, LOGOUT_CODE);
     }

@@ -9,6 +9,7 @@ import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
+import java.io.File;
 import java.util.Arrays;
 
 public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
@@ -37,6 +38,10 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         } catch (Exception e){
             e.printStackTrace();
             return "-1";
+        }
+        // Sometimes the sessionID fuckes up. Will then logout user.
+        if (s.equals("invalid sessionId")){
+            return "true";
         }
         Log.i("AWSC.doInBackground", s);
         return s;
