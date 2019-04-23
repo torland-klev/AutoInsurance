@@ -180,6 +180,10 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
         if(output.equals("true")){
             tv.setText(getString(R.string.claim_submitted));
             tv.setTextColor(Color.GREEN);
+            TITLE.setText("");
+            DATE.setText("");
+            PLATE.setText("");
+            DESCRIPTION.setText("");
         }
         else{
             tv.setText(getString(R.string.something_went_wrong));

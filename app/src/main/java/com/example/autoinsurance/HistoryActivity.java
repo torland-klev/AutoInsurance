@@ -154,7 +154,6 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         //Server went offline
         String filename = "/historycache.tmp";
         if (output.equals("-1")){
-
             ConstraintLayout layout = findViewById(R.id.history_layout);
             ConstraintSet set = new ConstraintSet();
             TextView status = new TextView(this);
