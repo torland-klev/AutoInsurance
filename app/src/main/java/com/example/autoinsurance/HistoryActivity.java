@@ -77,10 +77,6 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                                 Log.d("NAVIGATION_MENU", "History");
                                 startHistoryActivity();
                                 break;
-                            case "Chat":
-                                Log.d("NAVIGATION_MENU", "Chat");
-                                startChatActivity();
-                                break;
                             case "New claim":
                                 Log.d("NAVIGATION_MENU", "New claim");
                                 startNewClaimActivity();
@@ -136,13 +132,6 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         startActivityForResult(intent, LOGOUT_CODE);
     }
 
-    public void startChatActivity() {
-        Log.d("NAVIGATION_MENU", "Tries to open Chat activity");
-        Intent intent = new Intent(this, ChatActivity.class);
-        intent.putExtra("SESSION_ID", SESSION_ID);
-        startActivityForResult(intent, LOGOUT_CODE);
-    }
-
     public void startNewClaimActivity() {
         Log.d("NAVIGATION_MENU", "Tries to open New Claim activity");
         Intent intent = new Intent(this, NewClaimActivity.class);
@@ -181,12 +170,12 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
 
             try {
                 FileInputStream fis = new FileInputStream(this.getCacheDir() + filename);
-                Log.d("HOME CACHE", "Cache was opened");
+                Log.d("HISTORY CACHE", "Cache was opened");
                 ObjectInputStream obj = new ObjectInputStream(fis);
                 status.setText(getString(R.string.webServerUnavailableCache));
                 fillActivity((HashMap<String, String>) obj.readObject());
             } catch (Exception e) {
-                Log.d("HOME CACHE", "Cache open failed");
+                Log.d("HISTORY CACHE", "Cache open failed");
                 status.setText(getString(R.string.webServerUnavailable));
                 e.printStackTrace();
             }
@@ -194,6 +183,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         //User clicks LogOut
         if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
             finish();
         }
         //Puts output from form [{.1.},{.2.},...,{.N.}]
@@ -201,16 +191,11 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         output = output.substring(1, output.length()-1);
         String newOutput[] = output.split("\\},");
 
-
-        //Storing customer data in a HashMap. May be useful to have it stored later.
         for (int i = 0; i < newOutput.length; i++){
             newOutput[i] = newOutput[i] + "}";
         }
 
-        Log.d("FINISH", output);
-        for (String s : newOutput){
-            Log.d("FINISH", s);
-        }
+        //Storing customer data in a HashMap. May be useful to have it stored later.
         HashMap<String, String> claims = new HashMap<>();
         try {
             for (String is : newOutput) {
@@ -227,16 +212,15 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
         }
 
         //Store claims in cache
-
         try {
             File f = new File(this.getCacheDir() + filename);
             FileOutputStream out = new FileOutputStream(f);
             ObjectOutputStream obj = new ObjectOutputStream(out);
             obj.writeObject(claims);
             obj.close();
-            Log.d("HOME CACHE", "Cache was written " + f.getAbsolutePath());
+            Log.d("HISTORY CACHE", "Cache was written " + f.getAbsolutePath());
         } catch (IOException e) {
-            Log.d("HOME CACHE", "Cache writing failed");
+            Log.d("HISTORY CACHE", "Cache writing failed");
             e.printStackTrace();
         }
 
