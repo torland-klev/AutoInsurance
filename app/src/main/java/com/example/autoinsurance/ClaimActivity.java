@@ -39,6 +39,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     private final int LOGOUT_CODE = 5;
     private String SESSION_ID;
     private String CLAIM_ID;
+    private String[] messages = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -210,10 +211,11 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 //Puts output from form [{.1.},{.2.},...,{.N.}]
                 //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
                 output = output.substring(1, output.length() - 1);
-                String messages[] = output.split("\\},");
-                for (int i = 0; i < messages.length; i++) {
-                    messages[i] = messages[i] + "}";
+                String msgs[] = output.split("\\},");
+                for (int i = 0; i < msgs.length; i++) {
+                    msgs[i] = msgs[i] + "}";
                 }
+                messages = msgs;
                 // Display how many messages are in the claim
                 TextView tv = findViewById(R.id.nrOfMessages);
                 String displayText = getString(R.string.nrOfMessages) + messages.length;
@@ -320,6 +322,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
         Intent intent = new Intent(this, ChatActivity.class);
         intent.putExtra("SESSION_ID", SESSION_ID);
         intent.putExtra("CLAIM_ID", CLAIM_ID);
+        intent.putExtra("messages", messages);
         startActivityForResult(intent, LOGOUT_CODE);
     }
 }

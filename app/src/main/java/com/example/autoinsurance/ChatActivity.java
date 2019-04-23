@@ -1,6 +1,9 @@
 package com.example.autoinsurance;
 
 import android.content.Intent;
+import android.graphics.Typeface;
+import android.support.constraint.ConstraintLayout;
+import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -9,15 +12,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.TextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
     private Intent mIntent;
     private String SESSION_ID;
+    private String CLAIM_ID;
     private DrawerLayout drawerLayout;
     private final int LOGOUT_CODE = 5;
+    private final ArrayList<HashMap<String, String>> messages = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,6 +40,22 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         setContentView(R.layout.activity_chat);
         mIntent = getIntent();
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
+        CLAIM_ID = mIntent.getStringExtra("CLAIM_ID");
+
+        for (String s : mIntent.getStringArrayExtra("messages")){
+            try {
+                HashMap<String, String> tempMap = new HashMap<>();
+                JSONObject obj = new JSONObject(s);
+                Iterator<String> keys = obj.keys();
+                while (keys.hasNext()) {
+                    String s1 = keys.next();
+                    tempMap.put(s1, obj.getString(s1));
+                }
+                messages.add(tempMap);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
 
         // Sets a new toolbar with navigation menu button
         Toolbar toolbar = findViewById(R.id.chat_toolbar);
@@ -71,11 +102,67 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
                         return true;
                     }
                 });
+        displayMessages();
+    }
+
+    private void displayMessages(){
+        int c = 400;
+        final int KEY = 1000;
+        for (HashMap<String, String> map: messages){
+            for (Map.Entry<String, String> pair : map.entrySet()) {
+                //C is used for TextView ID's
+                c++;
+
+                //Declare new TextViews
+                TextView value = new TextView(this);
+                TextView key = new TextView(this);
+
+                //Set properties for value
+                value.setText(pair.getValue());
+                value.setId(c);
+
+                //Set properties for key
+                key.setTypeface(null, Typeface.BOLD);
+                key.setText(pair.getKey());
+                key.setId(c+KEY);
+
+                //Add new views
+                ConstraintLayout layout = findViewById(R.id.chat_layout);
+                ConstraintSet set = new ConstraintSet();
+
+                layout.addView(value, 0);
+                layout.addView(key, 0);
+                set.clone(layout);
+
+                int size_dp = 8;
+
+                int dp = (int) TypedValue.applyDimension(
+                        TypedValue.COMPLEX_UNIT_DIP, size_dp, getResources()
+                                .getDisplayMetrics());
+
+                set.connect(c+KEY, ConstraintSet.END, R.id.chat_title, ConstraintSet.START);
+                set.connect(c, ConstraintSet.START, R.id.chat_title, ConstraintSet.END);
+                set.connect(R.id.back_button, ConstraintSet.TOP, c, ConstraintSet.BOTTOM);
+                if (c == 401) {
+                    set.connect(c, ConstraintSet.TOP, R.id.chat_title, ConstraintSet.BOTTOM, dp*5);
+                    set.connect(c+KEY, ConstraintSet.TOP, R.id.chat_title, ConstraintSet.BOTTOM, dp*5);
+                } else {
+                    set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
+                    set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
+                }
+                set.applyTo(layout);
+            }
+        }
     }
 
     @Override
     public void processFinish(String output) {
-
+        //User clicks LogOut
+        if (output.equals("true")) {
+            setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
     }
 
     public void logout() {
