@@ -132,6 +132,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private void loginAuto(){
         //Displays dialog to user, where user can choose to pick account
+        Log.d("LOGIN AUTO", "Login auto was called");
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
         builder.setTitle("Login");
@@ -154,9 +155,9 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 dialog.dismiss();
             }
         });
-
         AlertDialog alert = builder.create();
         alert.show();
+        alert.closeOptionsMenu();
     }
 
     /** TODO: Switch to next activity
@@ -227,6 +228,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     }
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        testConnectionThread.shutdown = false;
         Log.d("onActivityResult", "Was run");
         super.onActivityResult(requestCode, resultCode, data);
         // Logout

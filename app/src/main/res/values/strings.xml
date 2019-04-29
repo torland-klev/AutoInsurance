@@ -39,4 +39,7 @@
     <string name="chat">Chat</string>
     <string name="nrOfMessages">Number of messages: </string>
     <string name="see_messages">See messages</string>
+    <string name="new_message">New Message</string>
+    <string name="send">Send</string>
+    <string name="message_sent">Message sent successfully</string>
 </resources>

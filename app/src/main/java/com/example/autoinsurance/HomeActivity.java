@@ -130,6 +130,8 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.delegate = this;
         String[] args = {"logout", SESSION_ID};
         asyncTask.execute(args);
+        SESSION_ID = null;
+        finish();
     }
 
     public void getCustomerInfo(){
@@ -176,6 +178,12 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         //User clicks LogOut
         else if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
+        //Something went wrong
+        else if (output.equals("false")){
+            setResult(RESULT_CANCELED, new Intent());
             SESSION_ID = null;
             finish();
         }
