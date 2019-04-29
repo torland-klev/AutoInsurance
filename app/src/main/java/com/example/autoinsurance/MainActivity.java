@@ -2,6 +2,9 @@ package com.example.autoinsurance;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -31,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private final int BOOLEAN_REQUEST = 1;
     private final int ACCOUNT_PICKER = 2;
+    private final String CHANNEL_ID = "notify";
     private MyThread testConnectionThread;
     private EditText USERNAME;
     private EditText PASSWORD;
@@ -57,8 +61,6 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         //Set focus on username
         USERNAME.requestFocus();
 
-
-
         //Check SDK-version.
         //Autofill only works for versions 26 and up
         if (SDK_VERSION >= 26){
@@ -74,8 +76,8 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
 
         //Test connection
-
-        testConnectionThread = new MyThread(CONNECTION_STATUS);
+        createNotificationChannel();
+        testConnectionThread = new MyThread(CONNECTION_STATUS, CHANNEL_ID, this, null);
         testConnectionThread.start();
 
         //Check if user has previous sessionID
@@ -270,6 +272,21 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             } else {
                 Log.d("ACCOUNT", "Account picking error");
             }
+        }
+    }
+    private void createNotificationChannel() {
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Notification Channel";
+            String description = "Notification channel description";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
         }
     }
 }

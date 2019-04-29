@@ -180,50 +180,52 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             }
         }
         //User clicks LogOut
-        if (output.equals("true")) {
+        else if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();
         }
-        //Puts output from form [{.1.},{.2.},...,{.N.}]
-        //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
-        output = output.substring(1, output.length()-1);
-        String newOutput[] = output.split("\\},");
+        else {
+            //Puts output from form [{.1.},{.2.},...,{.N.}]
+            //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
+            output = output.substring(1, output.length() - 1);
+            String newOutput[] = output.split("\\},");
 
-        for (int i = 0; i < newOutput.length; i++){
-            newOutput[i] = newOutput[i] + "}";
-        }
-
-        //Storing customer data in a HashMap. May be useful to have it stored later.
-        HashMap<String, String> claims = new HashMap<>();
-        try {
-            for (String is : newOutput) {
-                JSONObject obj = new JSONObject(is);
-                Iterator<String> keys = obj.keys();
-                while (keys.hasNext()) {
-                    String s = keys.next();
-                    String s2 = keys.next();
-                    claims.put(obj.getString(s), obj.getString(s2));
-                }
+            for (int i = 0; i < newOutput.length; i++) {
+                newOutput[i] = newOutput[i] + "}";
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
 
-        //Store claims in cache
-        try {
-            File f = new File(this.getCacheDir() + filename);
-            FileOutputStream out = new FileOutputStream(f);
-            ObjectOutputStream obj = new ObjectOutputStream(out);
-            obj.writeObject(claims);
-            obj.close();
-            Log.d("HISTORY CACHE", "Cache was written " + f.getAbsolutePath());
-        } catch (IOException e) {
-            Log.d("HISTORY CACHE", "Cache writing failed");
-            e.printStackTrace();
-        }
+            //Storing history data in a HashMap. May be useful to have it stored later.
+            HashMap<String, String> claims = new HashMap<>();
+            try {
+                for (String is : newOutput) {
+                    JSONObject obj = new JSONObject(is);
+                    Iterator<String> keys = obj.keys();
+                    while (keys.hasNext()) {
+                        String s = keys.next();
+                        String s2 = keys.next();
+                        claims.put(obj.getString(s), obj.getString(s2));
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
-        fillActivity(claims);
+            //Store claims in cache
+            try {
+                File f = new File(this.getCacheDir() + filename);
+                FileOutputStream out = new FileOutputStream(f);
+                ObjectOutputStream obj = new ObjectOutputStream(out);
+                obj.writeObject(claims);
+                obj.close();
+                Log.d("HISTORY CACHE", "Cache was written " + f.getAbsolutePath());
+            } catch (IOException e) {
+                Log.d("HISTORY CACHE", "Cache writing failed");
+                e.printStackTrace();
+            }
+
+            fillActivity(claims);
+        }
     }
     private void fillActivity(HashMap<String, String> customer) {
 

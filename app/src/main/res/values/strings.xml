@@ -42,4 +42,6 @@
     <string name="new_message">New Message</string>
     <string name="send">Send</string>
     <string name="message_sent">Message sent successfully</string>
+    <string name="autoinsurance">AutoInsurance</string>
+    <string name="newMessage">You have new messages.</string>
 </resources>
