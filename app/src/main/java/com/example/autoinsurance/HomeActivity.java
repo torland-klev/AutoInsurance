@@ -1,9 +1,7 @@
 package com.example.autoinsurance;
 
-import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.net.Uri;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
@@ -17,34 +15,20 @@ import android.util.Log;
 import android.view.MenuItem;
 
 
-import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Typeface;
-import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
-import android.util.Log;
 import android.util.TypedValue;
-import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.kobjects.util.Strings;
-import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -54,6 +38,8 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
     private String SESSION_ID;
     private final int LOGOUT_CODE = 5;
+    private final String CHANNEL_ID = "notify";
+    private MyThread checkMessagesThread;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -110,6 +96,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                     }
                 });
 
+        //Create a thread to check for new messages.
+
+        checkMessagesThread = new MyThread(new TextView(this), CHANNEL_ID, this, SESSION_ID);
+        checkMessagesThread.start();
         getCustomerInfo();
 
     }
@@ -168,6 +158,8 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                 ObjectInputStream obj = new ObjectInputStream(fis);
                 status.setText(getString(R.string.webServerUnavailableCache));
                 fillActivity((HashMap<String, String>) obj.readObject());
+                obj.close();
+                fis.close();
             } catch (Exception e) {
                 Log.d("HOME CACHE", "Cache open failed");
                 status.setText(getString(R.string.webServerUnavailable));
@@ -209,6 +201,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                 ObjectOutputStream obj = new ObjectOutputStream(out);
                 obj.writeObject(customer);
                 obj.close();
+                out.close();
                 Log.d("HOME CACHE", "Cache was written " + f.getAbsolutePath());
             } catch (IOException e) {
                 Log.d("HOME CACHE", "Cache writing failed");

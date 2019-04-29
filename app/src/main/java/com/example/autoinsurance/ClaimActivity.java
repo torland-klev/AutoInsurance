@@ -169,8 +169,8 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     public void processFinish(String output) {
         //Server went offline
         String filename = "/claimcache" + CLAIM_ID + ".tmp";
+        String chat_filename = "/chatcache" + CLAIM_ID + ".tmp";
         if (output.equals("-1")){
-
             ConstraintLayout layout = findViewById(R.id.claim_layout);
             ConstraintSet set = new ConstraintSet();
             TextView status = new TextView(this);
@@ -183,13 +183,21 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             set.connect(status.getId(), ConstraintSet.START, R.id.claim_title, ConstraintSet.END);
             set.connect(status.getId(), ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM);
             set.applyTo(layout);
-
             try {
                 FileInputStream fis = new FileInputStream(this.getCacheDir() + filename);
                 Log.d("CLAIM CACHE", "Cache was opened");
                 ObjectInputStream obj = new ObjectInputStream(fis);
                 status.setText(getString(R.string.webServerUnavailableCache));
                 fillActivity((HashMap<String, String>) obj.readObject());
+                fis = new FileInputStream(this.getCacheDir() + chat_filename);
+                obj = new ObjectInputStream(fis);
+                messages = (String[]) obj.readObject();
+                // Display how many messages are in the claim
+                TextView tv = findViewById(R.id.nrOfMessages);
+                String displayText = getString(R.string.nrOfMessages) + messages.length;
+                tv.setText(displayText);
+                obj.close();
+                fis.close();
             } catch (Exception e) {
                 Log.d("CLAIM CACHE", "Cache open failed");
                 status.setText(getString(R.string.webServerUnavailable));
@@ -197,68 +205,77 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             }
         }
         //User clicks LogOut
-        if (output.equals("true")) {
+        else if (output.equals("true")) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();
         }
+        else {
+            //Storing claim data in a HashMap. May be useful to have it stored later.
+            HashMap<String, String> claim = new HashMap<>();
+            try {
 
-        //Storing claim data in a HashMap. May be useful to have it stored later.
-        HashMap<String, String> claim = new HashMap<>();
-        try {
+                // Get chat history of claim
+                if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
+                    //Puts output from form [{.1.},{.2.},...,{.N.}]
+                    //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
+                    output = output.substring(1, output.length() - 1);
+                    String msgs[] = output.split("\\},");
+                    for (int i = 0; i < msgs.length; i++) {
+                        msgs[i] = msgs[i] + "}";
+                    }
+                    messages = msgs;
+                    // Display how many messages are in the claim
+                    TextView tv = findViewById(R.id.nrOfMessages);
+                    String displayText = getString(R.string.nrOfMessages) + messages.length;
+                    tv.setText(displayText);
+                    //Write the messages to cache
+                    try {
+                        File f = new File(this.getCacheDir() + chat_filename);
+                        FileOutputStream out = new FileOutputStream(f);
+                        ObjectOutputStream obj2 = new ObjectOutputStream(out);
+                        obj2.writeObject(messages);
+                        obj2.close();
+                        Log.d("CLAIM CACHE", "Cache was written " + f.getAbsolutePath());
+                    } catch (IOException e) {
+                        Log.d("CLAIM CACHE", "Cache writing failed");
+                        e.printStackTrace();
+                    }
 
-            // Get chat history of claim
-            if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
-                //TODO: Put chats into cache.
-
-                //Puts output from form [{.1.},{.2.},...,{.N.}]
-                //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
-                output = output.substring(1, output.length() - 1);
-                String msgs[] = output.split("\\},");
-                for (int i = 0; i < msgs.length; i++) {
-                    msgs[i] = msgs[i] + "}";
                 }
-                messages = msgs;
-                // Display how many messages are in the claim
-                TextView tv = findViewById(R.id.nrOfMessages);
-                String displayText = getString(R.string.nrOfMessages) + messages.length;
-                tv.setText(displayText);
-            }
-            // No messages found for claim
-            else if (output.length() < 6){
-                TextView tv = findViewById(R.id.nrOfMessages);
-                String displayText = getString(R.string.nrOfMessages) + "0";
-                tv.setText(displayText);
-            }
-            // Get the information of the claim
-            else {
-
-                JSONObject obj = new JSONObject(output);
-                Iterator<String> keys = obj.keys();
-                while (keys.hasNext()) {
-                    String s = keys.next();
-                    claim.put(s, obj.getString(s));
+                // No messages found for claim
+                else if (output.length() < 6) {
+                    TextView tv = findViewById(R.id.nrOfMessages);
+                    String displayText = getString(R.string.nrOfMessages) + "0";
+                    tv.setText(displayText);
                 }
+                // Get the information of the claim
+                else {
 
-                try {
-                    File f = new File(this.getCacheDir() + filename);
-                    FileOutputStream out = new FileOutputStream(f);
-                    ObjectOutputStream obj2 = new ObjectOutputStream(out);
-                    obj2.writeObject(claim);
-                    obj2.close();
-                    Log.d("CLAIM CACHE", "Cache was written " + f.getAbsolutePath());
-                } catch (IOException e) {
-                    Log.d("CLAIM CACHE", "Cache writing failed");
-                    e.printStackTrace();
+                    JSONObject obj = new JSONObject(output);
+                    Iterator<String> keys = obj.keys();
+                    while (keys.hasNext()) {
+                        String s = keys.next();
+                        claim.put(s, obj.getString(s));
+                    }
+
+                    try {
+                        File f = new File(this.getCacheDir() + filename);
+                        FileOutputStream out = new FileOutputStream(f);
+                        ObjectOutputStream obj2 = new ObjectOutputStream(out);
+                        obj2.writeObject(claim);
+                        obj2.close();
+                        Log.d("CLAIM CACHE", "Cache was written " + f.getAbsolutePath());
+                    } catch (IOException e) {
+                        Log.d("CLAIM CACHE", "Cache writing failed");
+                        e.printStackTrace();
+                    }
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+            fillActivity(claim);
         }
-        catch (JSONException e) {
-            e.printStackTrace();
-        }
-        //Store claims in cache
-
-        fillActivity(claim);
     }
 
     /**

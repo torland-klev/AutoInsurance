@@ -24,7 +24,14 @@ import android.widget.TextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 
 public class ChatActivity extends AppCompatActivity implements AsyncResponse{
@@ -35,8 +42,9 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     private DrawerLayout drawerLayout;
     private EditText MESSAGE;
     private final int LOGOUT_CODE = 5;
-    private final ArrayList<JSONObject> messages = new ArrayList<>();
+    private ArrayList<JSONObject> messages = new ArrayList<>();
     private boolean NEW_CLAIM_SUBMITTED = false;
+    private String filename;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,6 +54,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
         CLAIM_ID = mIntent.getStringExtra("CLAIM_ID");
         MESSAGE = findViewById(R.id.new_chat);
+        filename = "/chatcache" + CLAIM_ID + ".tmp";
 
         //Create JSON object of the String-array from Intent
         for (String s : mIntent.getStringArrayExtra("messages")){
@@ -184,6 +193,10 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
     @Override
     public void processFinish(String output) {
+
+        //No cache needed, as the messages are not retrieved from server directly, byt given from
+        //the claim activity.
+
         //User clicks LogOut
         if (output.equals("true") && !NEW_CLAIM_SUBMITTED) {
             setResult(RESULT_OK, new Intent());
