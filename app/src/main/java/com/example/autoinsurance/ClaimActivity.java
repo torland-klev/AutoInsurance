@@ -161,6 +161,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 finish();
             }
         }
+        getChat();
     }
 
     @SuppressLint("ResourceType")
@@ -208,6 +209,8 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
 
             // Get chat history of claim
             if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
+                //TODO: Put chats into cache.
+
                 //Puts output from form [{.1.},{.2.},...,{.N.}]
                 //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
                 output = output.substring(1, output.length() - 1);

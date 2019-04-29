@@ -1,6 +1,7 @@
 package com.example.autoinsurance;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
@@ -11,19 +12,20 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.Map;
 
 public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
@@ -31,8 +33,10 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     private String SESSION_ID;
     private String CLAIM_ID;
     private DrawerLayout drawerLayout;
+    private EditText MESSAGE;
     private final int LOGOUT_CODE = 5;
-    private final ArrayList<HashMap<String, String>> messages = new ArrayList<>();
+    private final ArrayList<JSONObject> messages = new ArrayList<>();
+    private boolean NEW_CLAIM_SUBMITTED = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,17 +45,12 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         mIntent = getIntent();
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
         CLAIM_ID = mIntent.getStringExtra("CLAIM_ID");
+        MESSAGE = findViewById(R.id.new_chat);
 
+        //Create JSON object of the String-array from Intent
         for (String s : mIntent.getStringArrayExtra("messages")){
             try {
-                HashMap<String, String> tempMap = new HashMap<>();
-                JSONObject obj = new JSONObject(s);
-                Iterator<String> keys = obj.keys();
-                while (keys.hasNext()) {
-                    String s1 = keys.next();
-                    tempMap.put(s1, obj.getString(s1));
-                }
-                messages.add(tempMap);
+                messages.add(new JSONObject(s));
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -106,49 +105,77 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     }
 
     private void displayMessages(){
-        int c = 400;
-        final int KEY = 1000;
-        for (HashMap<String, String> map: messages){
-            for (Map.Entry<String, String> pair : map.entrySet()) {
+
+        int c = 1234;
+        boolean first = true;
+        Iterator<JSONObject> i = messages.iterator();
+        while (i.hasNext()) {
+            JSONObject obj = i.next();
+            Iterator<String> keys = obj.keys();
+            while (keys.hasNext()){
+                String key = keys.next();
+                String value = null;
+                try {
+                    value = obj.getString(key);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
                 //C is used for TextView ID's
                 c++;
 
                 //Declare new TextViews
-                TextView value = new TextView(this);
-                TextView key = new TextView(this);
+                TextView tv = new TextView(this);
 
-                //Set properties for value
-                value.setText(pair.getValue());
-                value.setId(c);
+                //Set ID for textview. ID is incremental.
+                tv.setId(c);
 
-                //Set properties for key
-                key.setTypeface(null, Typeface.BOLD);
-                key.setText(pair.getKey());
-                key.setId(c+KEY);
+                //Set text
+                tv.setText(value);
 
-                //Add new views
+                //Add new view
                 ConstraintLayout layout = findViewById(R.id.chat_layout);
                 ConstraintSet set = new ConstraintSet();
-
-                layout.addView(value, 0);
-                layout.addView(key, 0);
+                layout.addView(tv, 0);
                 set.clone(layout);
 
+                //Easiest way to programatically set DP
                 int size_dp = 8;
-
                 int dp = (int) TypedValue.applyDimension(
                         TypedValue.COMPLEX_UNIT_DIP, size_dp, getResources()
                                 .getDisplayMetrics());
 
-                set.connect(c+KEY, ConstraintSet.END, R.id.chat_title, ConstraintSet.START);
-                set.connect(c, ConstraintSet.START, R.id.chat_title, ConstraintSet.END);
-                set.connect(R.id.back_button, ConstraintSet.TOP, c, ConstraintSet.BOTTOM);
-                if (c == 401) {
-                    set.connect(c, ConstraintSet.TOP, R.id.chat_title, ConstraintSet.BOTTOM, dp*5);
-                    set.connect(c+KEY, ConstraintSet.TOP, R.id.chat_title, ConstraintSet.BOTTOM, dp*5);
-                } else {
-                    set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
-                    set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
+                if (key.equals("sender")){
+                    //Set the senders name to bold
+                    tv.setTypeface(null, Typeface.BOLD);
+                    //If first chat, constrain it to top of title
+                    if (first){
+                        set.connect(c, ConstraintSet.TOP, R.id.chat_title, ConstraintSet.BOTTOM, dp);
+                        first = false;
+                    }
+                    //Else constrain it to the previous chat message
+                    else {
+                        set.connect(c, ConstraintSet.TOP, c-5, ConstraintSet.BOTTOM, dp*2);
+                    }
+                    //Set Server (aka sender) on the left
+                    if (value.equals("AutoInSure")){
+                        set.connect(c, ConstraintSet.START, c-1, ConstraintSet.END, dp);
+                        set.connect(c-1, ConstraintSet.START, layout.getId(), ConstraintSet.START, dp);
+                        set.connect(c-2, ConstraintSet.START, layout.getId(), ConstraintSet.START, dp);
+                    } else {
+                        set.connect(c, ConstraintSet.END, c-1, ConstraintSet.START, dp);
+                        set.connect(c-1, ConstraintSet.END, layout.getId(), ConstraintSet.END, dp);
+                        set.connect(c-2, ConstraintSet.END, layout.getId(), ConstraintSet.END, dp);
+                    }
+                    set.connect(c-1, ConstraintSet.TOP, c, ConstraintSet.TOP);
+                    set.connect(c-2, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM);
+                    set.connect(R.id.new_chat, ConstraintSet.TOP, c-2, ConstraintSet.BOTTOM, dp);
+                } else if (key.equals("msg")){
+                    //Set width to half of parent
+                    DisplayMetrics displayMetrics = new DisplayMetrics();
+                    getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                    int width = displayMetrics.widthPixels;
+                    Log.d("TOTAL", Integer.toString(width));
+                    set.constrainWidth(c, width/2);
                 }
                 set.applyTo(layout);
             }
@@ -158,10 +185,22 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     @Override
     public void processFinish(String output) {
         //User clicks LogOut
-        if (output.equals("true")) {
+        if (output.equals("true") && !NEW_CLAIM_SUBMITTED) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();
+        }
+        //Message was sent
+        NEW_CLAIM_SUBMITTED = false;
+        TextView tv = findViewById(R.id.chat_result);
+        if(output.equals("true")){
+            tv.setText(getString(R.string.message_sent));
+            tv.setTextColor(Color.GREEN);
+            MESSAGE.setText("");
+        }
+        else{
+            tv.setText(getString(R.string.something_went_wrong));
+            tv.setTextColor(Color.RED);
         }
     }
 
@@ -213,5 +252,21 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
     public void goBack(View view) {
         finish();
+    }
+
+    public void newMessage(View view) {
+
+        //Get message-body from EditText-field, and send the message to server.
+        String msg_body  = MESSAGE.getText().toString();
+
+        if (msg_body.length() < 20){
+            MESSAGE.setError("Message too short (<20)");
+        } else {
+            NEW_CLAIM_SUBMITTED = true;
+            AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
+            asyncTask.delegate = this;
+            String[] args = {"submitNewMessage", SESSION_ID, CLAIM_ID, msg_body};
+            asyncTask.execute(args);
+        }
     }
 }
