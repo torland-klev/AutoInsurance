@@ -39,7 +39,7 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
             e.printStackTrace();
             return "-1";
         }
-        // Sometimes the sessionID fuckes up. Will then logout user.
+        // Sometimes the sessionID fucks up. Will then logout user.
         if (s.equals("invalid sessionId")){
             return "true";
         }
