@@ -14,6 +14,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
@@ -306,9 +307,19 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             TextView value = new TextView(this);
             TextView key = new TextView(this);
 
+            //Get present TextViews
+            TextView nrOfMessages = findViewById(R.id.nrOfMessages);
+
             //Set properties for value
             value.setText(pair.getValue());
             value.setId(c);
+
+            //Set max-width to 1/3 of parent.
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+            Log.d("TOTAL", Integer.toString(width));
+            value.setMaxWidth(width/3);
 
             //Set properties for key
             key.setTypeface(null, Typeface.BOLD);
@@ -331,13 +342,13 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
 
             set.connect(c+KEY, ConstraintSet.END, R.id.claim_title, ConstraintSet.START);
             set.connect(c, ConstraintSet.START, R.id.claim_title, ConstraintSet.END);
-            set.connect(R.id.back_button, ConstraintSet.TOP, c, ConstraintSet.BOTTOM);
+            set.connect(nrOfMessages.getId(), ConstraintSet.TOP, c, ConstraintSet.BOTTOM, 2*dp);
             if (c == 401) {
                 set.connect(c, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*5);
                 set.connect(c+KEY, ConstraintSet.TOP, R.id.claim_title, ConstraintSet.BOTTOM, dp*5);
             } else {
-                set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
-                set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
+                set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp);
+                set.connect(c+KEY, ConstraintSet.TOP, c, ConstraintSet.TOP);
             }
             set.applyTo(layout);
         }

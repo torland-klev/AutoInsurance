@@ -286,7 +286,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         super.onActivityResult(requestCode, resultCode, data);
         // Logout
         if (requestCode == BOOLEAN_REQUEST) {
-            if (resultCode == RESULT_OK) {
+            if ((data.getStringExtra("ResultCode") != null) || (resultCode == RESULT_OK)) {
                 LOGIN_STATUS.setText(getString(R.string.logout_success));
                 File f = new File(this.getCacheDir() + filename);
                 f.delete();

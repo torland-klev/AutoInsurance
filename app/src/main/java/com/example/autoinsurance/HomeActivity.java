@@ -39,6 +39,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     private final int LOGOUT_CODE = 5;
     private final String CHANNEL_ID = "notify";
     private MyThread checkMessagesThread;
+    private boolean LOGOUT = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +88,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                                 break;
                             case "Log out":
                                 Log.d("NAVIGATION_MENU", "Log out");
+                                LOGOUT = true;
                                 logout();
                                 break;
                         }
@@ -133,7 +135,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.execute(args);
         SESSION_ID = null;
         checkMessagesThread.shutdown = true;
-        finish();
     }
 
     /**
@@ -174,13 +175,13 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
             Log.d("HOME 2", "Done");
             setResult(-10, new Intent());
             SESSION_ID = null;
-            finish();
+            logout();
         }
         else if (output.equals("invalid sessionId")){
             logout();
         }
         //Server went offline
-        else if (output.equals("-1")){
+        else if (output.equals("-1") && !LOGOUT){
 
             ConstraintLayout layout = findViewById(R.id.home_layout);
             ConstraintSet set = new ConstraintSet();
@@ -211,10 +212,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         }
 
         //User clicks LogOut
-        else if (output.equals("true")) {
+        else if (output.equals("true") || LOGOUT) {
             Log.d("HOME", "Logout Success");
-            setResult(1, new Intent());
             SESSION_ID = null;
+            setResult(RESULT_OK, new Intent());
             finish();
         }
         else {

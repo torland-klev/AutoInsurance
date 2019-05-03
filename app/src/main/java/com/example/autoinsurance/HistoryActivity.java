@@ -13,6 +13,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
@@ -245,6 +246,13 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             value.setClickable(true);
             setOnClick(value, this, value.getId()-s);
 
+            //Set max-width to 1/4 of parent.
+            DisplayMetrics displayMetrics = new DisplayMetrics();
+            getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+            int width = displayMetrics.widthPixels;
+            Log.d("TOTAL", Integer.toString(width));
+            value.setMaxWidth(width/4);
+
             //Set properties for key
             key.setTypeface(null, Typeface.BOLD);
             key.setText(pair.getKey());
@@ -274,8 +282,8 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                 set.connect(c, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*5);
                 set.connect(c+KEY, ConstraintSet.TOP, R.id.history_title, ConstraintSet.BOTTOM, dp*5);
             } else {
-                set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp*2);
-                set.connect(c+KEY, ConstraintSet.TOP, c+KEY-1, ConstraintSet.BOTTOM, dp*2);
+                set.connect(c, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM, dp);
+                set.connect(c+KEY, ConstraintSet.TOP, c, ConstraintSet.TOP);
             }
             set.applyTo(layout);
         }
