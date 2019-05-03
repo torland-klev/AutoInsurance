@@ -9,11 +9,11 @@ import org.ksoap2.serialization.SoapPrimitive;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 
-import java.io.File;
 import java.util.Arrays;
 
-public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
+//This class is more or less equal the code-snippet we were provided.
 
+public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
 
     AsyncResponse delegate = null; //Package private
     private final String URL = "http://10.0.2.2:8080/AutoInSureWS?WSDL";
