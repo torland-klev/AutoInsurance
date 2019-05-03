@@ -24,6 +24,15 @@ public class MyThread extends Thread implements AsyncResponse{
     private ArrayList<String> claimIDS;
     private int NumberOfMessages = 0, prevNumberOfMessages = 0, async_counter = 0, return_counter = 0;
 
+    /**
+     *
+     * @param cs The textview to display the status message. Can be blank, or non-existent.
+     * @param id The Channel-ID used for notificaiton. As there is only on notifier, this ID
+     *           is of little use and hardcoded.
+     * @param con Pass "this" from caller, because its required.
+     * @param sID Session ID. If null, the thread will deem itself a connection checker thread. If
+     *            not-null, it will check for new messages given the Session ID.
+     */
     public MyThread(TextView cs, String id, Context con, String sID){
         CONNECTION_STATUS = cs;
         CHANNEL_ID = id;
@@ -39,6 +48,25 @@ public class MyThread extends Thread implements AsyncResponse{
 
     private Boolean prevConnected = false;
     private final int CONNECTION_TEST_TIMEOUT = 4000;
+
+    /**
+     *  Runs the created thread.
+     *
+     *  The SHUTDOWN-flag can be set from anywhere within the package, and
+     *  will shut down the thread.
+     *
+     *  The CheckMessages-flag is set on creation by the constructor, and is based on if the
+     *  SessionID is null or not-null.
+     *
+     *  The prevConnected-flag is set when there has been a connection, meaning that while the
+     *  client is connected to the server, it will check less often if there is still a connection.
+     *  This is because when first connected, it is assumed you are in a place where you will
+     *  stay connected for a while.
+     *
+     *  The integer CONNECTION_TEST_TIMEOUT is the wait-time inbetween connection-attemps in ms.
+     *  If the prevConnected-flag is set, it will wait for 3x as long.
+     *
+     */
     public void run(){
         while(!shutdown) {
             if (!checkMessages){
@@ -69,6 +97,12 @@ public class MyThread extends Thread implements AsyncResponse{
         }
     }
 
+    /**
+     * This method gets all the claims given a sessionID.
+     * This method is only called if the thread is a message-checker thread.
+     * As with the other calls to the web-server,
+     * the result will be handled in the processFinished()-method.
+     */
     private void getHistory(){
         //Get all claims
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
@@ -76,6 +110,12 @@ public class MyThread extends Thread implements AsyncResponse{
         String[] args = {"listClaims", SESSION_ID};
         asyncTask.execute(args);
     }
+
+    /**
+     * The getClaim()-method gets all messages for all the claims received.
+     * The getMessages-flag is set, telling processFinished()-method that the results it is about
+     * to be given is messages for a given claim.
+     */
     private void getClaim(){
         Log.d("THREAD", "getClaim was called.");
         getMessages = true;
@@ -88,11 +128,45 @@ public class MyThread extends Thread implements AsyncResponse{
         }
     }
 
+    /**
+     * This method is part of all classes that takes advantage of async ws-calls.
+     * If the thread is a connection-checker, it ignores the entire mess that is the
+     * checkMessages if-test. The async-caller returns 0 if the webserver is unavailanble, therefore
+     * if the checkMessages-flag is not set, then all return calls that is not 0 is considered
+     * positive (meaning that the server is available).
+     *
+     * If the checkMessages-flag is set, then we are either going to get the messages for a given
+     * claim, or check to see if there are any new messages for a given claim.
+     *
+     * Further, if the getMessages-flag is set, then the @param output is a list of messages given a
+     * specific claim. For every claim, we take the messages and count them. This is done using
+     * a method that you will see/have seen throughout this project; its basically splitting the
+     * JSON-object into a String-array. The number of messages is then grabbed by getting the
+     * length of said String-array. This number is incrementet to a current counter.
+     * After return_counter == async_counter (the number of claims we've received messages for
+     * equals the number of claims we've done a async ws-call for), then we can check if there
+     * are more messages now than for the previous check. If the prevNumberOfMessages-integer is 0,
+     * then we assume that its the first time the thread is running, and there we wont notify the user.
+     * Otherwise, if NumberOfMessages exceeds the prevNumberOfMessages, then there are new messages.
+     * Will then send a notification. Note: does not distinguish between messages sent by user
+     * and server. This is rather simple (not complex), but time-consuming and out of scope.
+     * This would also make testing harder, as there are no simple way of adding messages
+     * to be sent from the server in runtime.
+     * For concurrency reasons, there is no simple way of telling what claim
+     * we're currently handling messages for. If we could always assume that the list of claims
+     * starts with 1, and then iterates up until end end, then we could solve this with a counter.
+     * Otherwise, we have the possibility of still using a counter, and use that as indexing in an
+     * array, but this is not done as it seems to be out of scope.
+     *
+     * @param output The output from the calls the the Web-Server made in this class.
+     *
+     */
     @Override
     public void processFinish(String output) {
         //Message-checker thread
         if (checkMessages){
             if (getMessages){
+                //All messages are retreived.
                 return_counter++;
                 if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
                     //Puts output from form [{.1.},{.2.},...,{.N.}]
