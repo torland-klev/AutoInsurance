@@ -77,27 +77,27 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         //Check if user has previous sessionID stored in cache. If so, log the user in using
         //that sessionID. If it turns out that the SessionID is broken, the user will be logged
         //out, and the cache cleared.
+        boolean cacheHIT = false;
         try {
             File f = new File(this.getCacheDir() + filename);
             BufferedReader in = new BufferedReader(new FileReader(f));
             Log.d("MAIN CACHE", "Cache was opened");
             String sessionID = in.readLine();
             in.close();
-            Log.d("SESSIONID", sessionID);
+            Log.d("SESSIONID", "Offline login using sessinID: " + sessionID);
+            cacheHIT = true;
             navigateToHomeScreen(sessionID);
 
         } catch (Exception e) {
             Log.d("MAIN CACHE", "Cache open failed");
-            e.printStackTrace();
         }
 
         //Check for accounts
         am = AccountManager.get(this);
         auAccounts = am.getAccountsByType(accountType);
-        if (auAccounts.length != 0){
+        if ((auAccounts.length != 0) && !cacheHIT) {
             loginAuto();
         }
-
     }
 
 
@@ -177,7 +177,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
      *
      * If the output from the async ws-caller is -1, then the async caller failed to connect to the
      * server. This is an inconsistency on my part, as in the other cases the async caller returns
-     * 0 when the server is unavailable.
+     * 0 when the server is unavailable. (Update: it now returns -1 most cases).
      *
      * If neither of these outputs, then it is assumes that login was a success. It will then
      * call addAccount(), which adds the account to the device, and then write the SessionID to cache.
@@ -292,6 +292,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 f.delete();
                 LOGIN_STATUS.setTextColor(Color.BLUE);
             } else {
+                Log.d("LOGOUT_RESULT", Integer.toString(resultCode));
                 LOGIN_STATUS.setText(getString(R.string.logout_unsuccess));
                 LOGIN_STATUS.setTextColor(Color.YELLOW);
             }
@@ -302,14 +303,14 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                 AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
                 asyncTask.delegate = this;
                 Account ac = null;
-
-                for (Account a : auAccounts){
-                    if (a.name.equals(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))){
-                        ac = a;
-                        break;
+                if (auAccounts != null) {
+                    for (Account a : auAccounts) {
+                        if (a.name.equals(data.getStringExtra(AccountManager.KEY_ACCOUNT_NAME))) {
+                            ac = a;
+                            break;
+                        }
                     }
                 }
-
                 if (ac == null){
                     return;
                 }

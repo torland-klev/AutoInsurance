@@ -14,7 +14,6 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 
-
 import android.graphics.Typeface;
 import android.util.TypedValue;
 import android.view.View;
@@ -54,10 +53,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         drawerLayout = findViewById(R.id.drawer_layout);
         getSupportActionBar().setDisplayShowTitleEnabled(false);
 
+        //Get the intent, and the provided SessionID
         Intent mIntent = getIntent();
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
         Log.i("HOME_SESSION_ID", SESSION_ID);
-
 
         //creates a listener for the navigation menu
         NavigationView navigationView = findViewById(R.id.nav_view);
@@ -100,10 +99,17 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
         checkMessagesThread = new MyThread(new TextView(this), CHANNEL_ID, this, SESSION_ID);
         checkMessagesThread.start();
+
+        //Call get method that grabs the customer information from the server, given the Session ID.
         getCustomerInfo();
 
     }
 
+    /**
+     *
+     * @param item MenuItem clicked by user.
+     * @return Return-flag
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -115,6 +121,11 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
     }
 
+    /**
+     * Logs out user by nulling SessionID (remove the pointer, memory not overwritten. Possible
+     * security issue, but who cares?), shutting down the CheckMessagesThread, and finishing
+     * the activity.
+     */
     public void logout() {
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
         asyncTask.delegate = this;
@@ -125,6 +136,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         finish();
     }
 
+    /**
+     * Uses the async ws-caller to get customer info given the SessionID. Results are handled
+     * in processFinished().
+     */
     public void getCustomerInfo(){
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
         asyncTask.delegate = this;
@@ -132,13 +147,40 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.execute(args);
     }
 
-
-    //Called from onCreate()
+    /**
+     * Start by checking if the server is offline. If that is the case, display a warning to the user.
+     * Then, look for cache. If cache found, read the data from cache and fill it using the
+     * fillActivity()-method. Else, display to the user that no cache was found.
+     *
+     * If output is true, the user has clicket log out. Logs out user.
+     *
+     * If output is false, something went wrong with either sessionID, or on the server side. If
+     * this happens, log out the user. The following result-code is not handled, but displays
+     * a warning to the user.
+     *
+     * If none of these three, then the output is the customer info.
+     * Store the JSON-object in a <Property/Key , Value> HashMap, write said HashMap to cache,
+     * and use the HashMap as a parameter for fillActivity().
+     *
+     * @param output the data received from the Async ws-caller
+     */
     @Override
     public void processFinish(String output) {
-        //Server went offline
+
+
         String filename = "/homecache.tmp";
-        if (output.equals("-1")){
+        //Something went wrong
+        if (output.equals("false")){
+            Log.d("HOME 2", "Done");
+            setResult(-10, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
+        else if (output.equals("invalid sessionId")){
+            logout();
+        }
+        //Server went offline
+        else if (output.equals("-1")){
 
             ConstraintLayout layout = findViewById(R.id.home_layout);
             ConstraintSet set = new ConstraintSet();
@@ -170,13 +212,8 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
 
         //User clicks LogOut
         else if (output.equals("true")) {
-            setResult(RESULT_OK, new Intent());
-            SESSION_ID = null;
-            finish();
-        }
-        //Something went wrong
-        else if (output.equals("false")){
-            setResult(RESULT_CANCELED, new Intent());
+            Log.d("HOME", "Logout Success");
+            setResult(1, new Intent());
             SESSION_ID = null;
             finish();
         }
@@ -208,7 +245,6 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
                 Log.d("HOME CACHE", "Cache writing failed");
                 e.printStackTrace();
             }
-
 
             fillActivity(customer);
         }

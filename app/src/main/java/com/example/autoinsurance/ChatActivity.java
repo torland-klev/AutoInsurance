@@ -18,20 +18,12 @@ import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 
 public class ChatActivity extends AppCompatActivity implements AsyncResponse{
@@ -41,7 +33,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     private String CLAIM_ID;
     private DrawerLayout drawerLayout;
     private EditText MESSAGE;
-    private final int LOGOUT_CODE = 5;
+    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6;
     private ArrayList<JSONObject> messages = new ArrayList<>();
     private boolean NEW_CLAIM_SUBMITTED = false;
     private String filename;
@@ -57,12 +49,16 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         filename = "/chatcache" + CLAIM_ID + ".tmp";
 
         //Create JSON object of the String-array from Intent
-        for (String s : mIntent.getStringArrayExtra("messages")){
-            try {
-                messages.add(new JSONObject(s));
-            } catch (JSONException e) {
-                e.printStackTrace();
+        try {
+            for (String s : mIntent.getStringArrayExtra("messages")) {
+                try {
+                    messages.add(new JSONObject(s));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
             }
+        } catch (Exception e){
+            Log.d("CHAT ACTIVITY", "No String Extras to get.");
         }
 
         // Sets a new toolbar with navigation menu button
@@ -194,7 +190,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
     @Override
     public void processFinish(String output) {
 
-        //No cache needed, as the messages are not retrieved from server directly, byt given from
+        //No cache needed, as the messages are not retrieved from server directly, but given from
         //the claim activity.
 
         //User clicks LogOut
@@ -210,6 +206,8 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
             tv.setText(getString(R.string.message_sent));
             tv.setTextColor(Color.GREEN);
             MESSAGE.setText("");
+            setResult(SENT_MESSAGE_CODE);
+            finish();
         }
         else{
             tv.setText(getString(R.string.something_went_wrong));

@@ -30,7 +30,6 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         }
 
         String s;
-
         //Assumes METHOD is first param, rest of params are specific to a method
         String[] rest = Arrays.copyOfRange(params, 1, params.length );
         try {
@@ -39,9 +38,12 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
             e.printStackTrace();
             return "-1";
         }
+        if (s == null){
+            return "-1";
+        }
         // Sometimes the sessionID fucks up. Will then logout user.
         if (s.equals("invalid sessionId")){
-            return "true";
+            return "false";
         }
         Log.i("AWSC.doInBackground", s);
         return s;
@@ -58,7 +60,7 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
             androidHttpTransport.getServiceConnection().getResponseCode();
             return true;
         } catch (Exception e) {
-            e.printStackTrace();
+            Log.d("AsyncCaller", "WebServer Unavialable");
             return false;
         }
     }
@@ -82,9 +84,18 @@ public class AsyncWebServiceCaller extends AsyncTask<String, Void, String> {
         try {
             androidHttpTransport.call(SOAP_ACTION, envelope);
         } catch (Exception e) {
-            e.printStackTrace();
+            if (e instanceof java.net.SocketTimeoutException) {
+                Log.d("AsyncCaller", "WebServiceUnavailable");
+            } else {
+                e.printStackTrace();
+            }
         }
-        SoapPrimitive resultsRequestSOAP = (SoapPrimitive) envelope.getResponse();
-        return resultsRequestSOAP.toString();
+       try {
+            SoapPrimitive resultsRequestSOAP = (SoapPrimitive) envelope.getResponse();
+            return resultsRequestSOAP.toString();
+        } catch (Exception e){
+            Log.d("AsyncCaller", "Something went wrong with return value");
+            return null;
+        }
     }
 }

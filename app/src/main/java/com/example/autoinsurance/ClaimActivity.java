@@ -36,7 +36,8 @@ import java.util.Map;
 
 public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     private DrawerLayout drawerLayout;
-    private final int LOGOUT_CODE = 5;
+    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6;
+    private boolean SENT_MESSAGE_FLAG = false;
     private String SESSION_ID;
     private String CLAIM_ID;
     private String[] messages = null;
@@ -162,11 +163,15 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             }
         }
         getChat();
+        if (resultCode == SENT_MESSAGE_CODE){
+            SENT_MESSAGE_FLAG = true;
+        }
     }
 
     @SuppressLint("ResourceType")
     @Override
     public void processFinish(String output) {
+
         //Server went offline
         String filename = "/claimcache" + CLAIM_ID + ".tmp";
         String chat_filename = "/chatcache" + CLAIM_ID + ".tmp";
@@ -275,6 +280,10 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 e.printStackTrace();
             }
             fillActivity(claim);
+            if (SENT_MESSAGE_FLAG){
+                SENT_MESSAGE_FLAG = false;
+                toChat(new View(this));
+            }
         }
     }
 

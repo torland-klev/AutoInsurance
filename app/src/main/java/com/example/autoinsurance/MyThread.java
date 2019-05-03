@@ -150,8 +150,7 @@ public class MyThread extends Thread implements AsyncResponse{
      * Otherwise, if NumberOfMessages exceeds the prevNumberOfMessages, then there are new messages.
      * Will then send a notification. Note: does not distinguish between messages sent by user
      * and server. This is rather simple (not complex), but time-consuming and out of scope.
-     * This would also make testing harder, as there are no simple way of adding messages
-     * to be sent from the server in runtime.
+     *
      * For concurrency reasons, there is no simple way of telling what claim
      * we're currently handling messages for. If we could always assume that the list of claims
      * starts with 1, and then iterates up until end end, then we could solve this with a counter.
@@ -165,87 +164,91 @@ public class MyThread extends Thread implements AsyncResponse{
     public void processFinish(String output) {
         //Message-checker thread
         if (checkMessages){
-            if (getMessages){
-                //All messages are retreived.
-                return_counter++;
-                if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
+            if (output.equals("invalid sessionId") || output.equals("0") || output.equals("-1") || output.equals("false")){
+                //Wrong SessionID, Unavailable server
+            }
+            else {
+                Log.d("TEST", output);
+                if (getMessages) {
+                    //All messages are retreived.
+                    return_counter++;
+                    if ((output.length() > 6) && output.substring(3, 6).equals("msg")) {
+                        //Puts output from form [{.1.},{.2.},...,{.N.}]
+                        //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
+                        output = output.substring(1, output.length() - 1);
+                        String msgs[] = output.split("\\},");
+                        NumberOfMessages += msgs.length;
+                        Log.d("THREAD", Integer.toString(NumberOfMessages));
+                    }
+                    //All claims sent and retreived
+                    if (return_counter == async_counter) {
+
+                        getMessages = false;
+                        if (prevNumberOfMessages == 0) {
+                            //Do not send notification, first time running app
+                            Log.d("THREAD", "First time getting messages.");
+                        }
+                        //TODO? Find a way to tell which claim has new messages.
+                        //TODO? You get notification when you send messages too.
+                        else if (prevNumberOfMessages < NumberOfMessages) {
+                            //New messages found
+                            Log.d("THREAD", "Notification!");
+                            //Provide notification
+                            NotificationCompat.Builder builder = new NotificationCompat.Builder(CONTEXT, CHANNEL_ID)
+                                    .setSmallIcon(R.drawable.google_logo)
+                                    .setContentTitle("AutoInsurance")
+                                    .setContentText("You have new messages.")
+                                    .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                            NotificationManagerCompat notificationManager = NotificationManagerCompat.from(CONTEXT);
+                            notificationManager.notify(1, builder.build());
+
+                        } else {
+                            //No new messages found
+                            Log.d("THREAD", "No new messages.");
+                        }
+                        async_counter = 0;
+                        return_counter = 0;
+                        prevNumberOfMessages = NumberOfMessages;
+                        NumberOfMessages = 0;
+                    }
+                } else {
+                    Log.d("THREAD", "Starting to compute messages.");
+                    //Output is list of all claims.
                     //Puts output from form [{.1.},{.2.},...,{.N.}]
                     //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
                     output = output.substring(1, output.length() - 1);
-                    String msgs[] = output.split("\\},");
-                    NumberOfMessages += msgs.length;
-                    Log.d("THREAD", Integer.toString(NumberOfMessages));
-                }
-                //All claims sent and retreived
-                if (return_counter == async_counter){
-
-                    getMessages = false;
-                    if (prevNumberOfMessages == 0){
-                        //Do not send notification, first time running app
-                        Log.d("THREAD", "First time getting messages.");
+                    String newOutput[] = output.split("\\},");
+                    claimIDS = new ArrayList<>();
+                    for (int i = 0; i < newOutput.length; i++) {
+                        newOutput[i] = newOutput[i] + "}";
                     }
-                    //TODO? Find a way to tell which claim has new messages.
-                    //TODO? You get notification when you send messages too.
-                    else if(prevNumberOfMessages < NumberOfMessages){
-                        //New messages found
-                        Log.d("THREAD", "Notification!");
-                        //Provide notification
-                        NotificationCompat.Builder builder = new NotificationCompat.Builder(CONTEXT, CHANNEL_ID)
-                                .setSmallIcon(R.drawable.google_logo)
-                                .setContentTitle("AutoInsurance")
-                                .setContentText("You have new messages.")
-                                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
-                        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(CONTEXT);
-                        notificationManager.notify(1, builder.build());
 
-                    }
-                    else{
-                        //No new messages found
-                        Log.d("THREAD", "No new messages.");
-                    }
-                    async_counter = 0;
-                    return_counter = 0;
-                    prevNumberOfMessages = NumberOfMessages;
-                    NumberOfMessages = 0;
-                }
-            }
-            else {
-                Log.d("THREAD", "Starting to compute messages.");
-                //Output is list of all claims.
-                //Puts output from form [{.1.},{.2.},...,{.N.}]
-                //into array[0] = {.1.}, array[1] = {.2.}, ..., array[N-1] = {.N.}
-                output = output.substring(1, output.length() - 1);
-                String newOutput[] = output.split("\\},");
-                claimIDS = new ArrayList<>();
-                for (int i = 0; i < newOutput.length; i++) {
-                    newOutput[i] = newOutput[i] + "}";
-                }
-
-                try {
-                    for (String is : newOutput) {
-                        JSONObject obj = new JSONObject(is);
-                        Iterator<String> keys = obj.keys();
-                        while (keys.hasNext()) {
-                            //Get the claimID
-                            Object temp = obj.get(keys.next());
-                            String claimID;
-                            if (temp instanceof Integer) {
-                                claimID = Integer.toString((Integer) temp);
-                            } else {
-                                claimID = (String) temp;
+                    try {
+                        for (String is : newOutput) {
+                            JSONObject obj = new JSONObject(is);
+                            Iterator<String> keys = obj.keys();
+                            while (keys.hasNext()) {
+                                //Get the claimID
+                                Object temp = obj.get(keys.next());
+                                String claimID;
+                                if (temp instanceof Integer) {
+                                    claimID = Integer.toString((Integer) temp);
+                                } else {
+                                    claimID = (String) temp;
+                                }
+                                //Skip over the Claim Title
+                                if (keys.hasNext()) {
+                                    keys.next();
+                                }
+                                //Add all ClaimIDs to ArrayList
+                                claimIDS.add(claimID);
                             }
-                            //Skip over the Claim Title
-                            if (keys.hasNext()){
-                                keys.next();
-                            }
-                            //Add all ClaimIDs to ArrayList
-                            claimIDS.add(claimID);
                         }
+                        //Call getMessages, and set flag
+                        getClaim();
+                    } catch (JSONException e) {
+                        Log.d("MYTHREAD.allMessages", "Wrong format.");
                     }
-                    //Call getMessages, and set flag
-                    getClaim();
-                } catch (JSONException e) {
-                    e.printStackTrace();
                 }
             }
         }
