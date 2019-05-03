@@ -29,14 +29,12 @@ import java.util.Iterator;
 public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
     private Intent mIntent;
-    private String SESSION_ID;
-    private String CLAIM_ID;
+    private String SESSION_ID, CLAIM_ID;
     private DrawerLayout drawerLayout;
     private EditText MESSAGE;
-    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6;
+    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6, ERROR_CODE = -10;
     private ArrayList<JSONObject> messages = new ArrayList<>();
-    private boolean NEW_CLAIM_SUBMITTED = false;
-    private String filename;
+    private boolean LOGOUT = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +44,6 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         SESSION_ID = mIntent.getStringExtra("SESSION_ID");
         CLAIM_ID = mIntent.getStringExtra("CLAIM_ID");
         MESSAGE = findViewById(R.id.new_chat);
-        filename = "/chatcache" + CLAIM_ID + ".tmp";
 
         //Create JSON object of the String-array from Intent
         try {
@@ -99,6 +96,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
                                 break;
                             case "Log out":
                                 Log.d("NAVIGATION_MENU", "Log out");
+                                LOGOUT = true;
                                 logout();
                                 break;
                         }
@@ -192,15 +190,19 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
         //No cache needed, as the messages are not retrieved from server directly, but given from
         //the claim activity.
-
+        //Something went wrong
+        if (output.equals("false") || (output.equals("invalid sessionId"))){
+            setResult(ERROR_CODE, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
         //User clicks LogOut
-        if (output.equals("true") && !NEW_CLAIM_SUBMITTED) {
+        else if (output.equals("true") && LOGOUT) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();
         }
         //Message was sent
-        NEW_CLAIM_SUBMITTED = false;
         TextView tv = findViewById(R.id.chat_result);
         if(output.equals("true")){
             tv.setText(getString(R.string.message_sent));
@@ -244,9 +246,13 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data){
-        if (requestCode == LOGOUT_CODE){
-            if (resultCode == RESULT_OK){
+        if (requestCode == LOGOUT_CODE) {
+            if (resultCode == RESULT_OK) {
                 setResult(RESULT_OK, new Intent());
+                finish();
+            }
+            else {
+                setResult(ERROR_CODE, new Intent());
                 finish();
             }
         }
@@ -273,7 +279,6 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         if (msg_body.length() < 20){
             MESSAGE.setError("Message too short (<20)");
         } else {
-            NEW_CLAIM_SUBMITTED = true;
             AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
             asyncTask.delegate = this;
             String[] args = {"submitNewMessage", SESSION_ID, CLAIM_ID, msg_body};

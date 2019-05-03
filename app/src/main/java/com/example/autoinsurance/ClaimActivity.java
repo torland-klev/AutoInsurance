@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
-import android.renderscript.Sampler;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 import android.support.design.widget.NavigationView;
@@ -19,7 +18,6 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
 import android.widget.TextView;
 
 import org.json.JSONException;
@@ -37,10 +35,9 @@ import java.util.Map;
 
 public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     private DrawerLayout drawerLayout;
-    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6;
-    private boolean SENT_MESSAGE_FLAG = false;
-    private String SESSION_ID;
-    private String CLAIM_ID;
+    private final int LOGOUT_CODE = 5, SENT_MESSAGE_CODE = 6, ERROR_CODE = -10;
+    private boolean LOGOUT = false, SENT_MESSAGE_FLAG = false;
+    private String SESSION_ID, CLAIM_ID;
     private String[] messages = null;
 
     @Override
@@ -91,6 +88,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                                 break;
                             case "Log out":
                                 Log.d("NAVIGATION_MENU", "Log out");
+                                LOGOUT = true;
                                 logout();
                                 break;
                         }
@@ -162,6 +160,10 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 setResult(RESULT_OK, new Intent());
                 finish();
             }
+            else {
+                setResult(ERROR_CODE, new Intent());
+                finish();
+            }
         }
         getChat();
         if (resultCode == SENT_MESSAGE_CODE){
@@ -173,10 +175,16 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
     @Override
     public void processFinish(String output) {
 
-        //Server went offline
         String filename = "/claimcache" + CLAIM_ID + ".tmp";
         String chat_filename = "/chatcache" + CLAIM_ID + ".tmp";
-        if (output.equals("-1")){
+        //Something went wrong
+        if (output.equals("false") || (output.equals("invalid sessionId"))){
+            setResult(ERROR_CODE, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
+        //Server went offline
+        else if (output.equals("-1") && !LOGOUT){
             ConstraintLayout layout = findViewById(R.id.claim_layout);
             ConstraintSet set = new ConstraintSet();
             TextView status = new TextView(this);
@@ -211,7 +219,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
             }
         }
         //User clicks LogOut
-        else if (output.equals("true")) {
+        else if (output.equals("true") && LOGOUT) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();

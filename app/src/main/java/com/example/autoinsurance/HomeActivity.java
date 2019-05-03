@@ -36,10 +36,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     private DrawerLayout drawerLayout;
 
     private String SESSION_ID;
-    private final int LOGOUT_CODE = 5;
+    private final int LOGOUT_CODE = 5, ERROR_CODE = -10;
+    private boolean LOGOUT = false;
     private final String CHANNEL_ID = "notify";
     private MyThread checkMessagesThread;
-    private boolean LOGOUT = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,17 +168,13 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
     @Override
     public void processFinish(String output) {
 
-
         String filename = "/homecache.tmp";
         //Something went wrong
-        if (output.equals("false")){
-            Log.d("HOME 2", "Done");
-            setResult(-10, new Intent());
+        if (output.equals("false") || (output.equals("invalid sessionId"))){
+            setResult(ERROR_CODE, new Intent());
             SESSION_ID = null;
-            logout();
-        }
-        else if (output.equals("invalid sessionId")){
-            logout();
+            checkMessagesThread.shutdown = true;
+            finish();
         }
         //Server went offline
         else if (output.equals("-1") && !LOGOUT){
@@ -330,6 +326,10 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         if (requestCode == LOGOUT_CODE){
             if (resultCode == RESULT_OK){
                 setResult(RESULT_OK, new Intent());
+                finish();
+            }
+            else{
+                setResult(ERROR_CODE, new Intent());
                 finish();
             }
         }

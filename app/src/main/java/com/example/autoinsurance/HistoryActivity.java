@@ -1,6 +1,5 @@
 package com.example.autoinsurance;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
@@ -35,7 +34,8 @@ import java.util.Map;
 
 public class HistoryActivity extends AppCompatActivity implements AsyncResponse {
     private DrawerLayout drawerLayout;
-    private final int LOGOUT_CODE = 5;
+    private final int LOGOUT_CODE = 5, ERROR_CODE = -10;
+    private boolean LOGOUT = false;
     private String SESSION_ID;
 
     @Override
@@ -84,6 +84,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                                 break;
                             case "Log out":
                                 Log.d("NAVIGATION_MENU", "Log out");
+                                LOGOUT = true;
                                 logout();
                                 break;
                         }
@@ -147,14 +148,24 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                 setResult(RESULT_OK, new Intent());
                 finish();
             }
+            else {
+                setResult(ERROR_CODE, new Intent());
+                finish();
+            }
         }
     }
 
     @Override
     public void processFinish(String output) {
+        //Something went wrong
+        if (output.equals("false") || (output.equals("invalid sessionId"))){
+            setResult(ERROR_CODE, new Intent());
+            SESSION_ID = null;
+            finish();
+        }
         //Server went offline
         String filename = "/historycache.tmp";
-        if (output.equals("-1")){
+        if (output.equals("-1") && !LOGOUT){
             ConstraintLayout layout = findViewById(R.id.history_layout);
             ConstraintSet set = new ConstraintSet();
             TextView status = new TextView(this);
@@ -174,6 +185,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                 ObjectInputStream obj = new ObjectInputStream(fis);
                 status.setText(getString(R.string.webServerUnavailableCache));
                 fillActivity((HashMap<String, String>) obj.readObject());
+                obj.close();
             } catch (Exception e) {
                 Log.d("HISTORY CACHE", "Cache open failed");
                 status.setText(getString(R.string.webServerUnavailable));
@@ -181,7 +193,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
             }
         }
         //User clicks LogOut
-        else if (output.equals("true")) {
+        else if (output.equals("true") && LOGOUT) {
             setResult(RESULT_OK, new Intent());
             SESSION_ID = null;
             finish();
@@ -219,6 +231,7 @@ public class HistoryActivity extends AppCompatActivity implements AsyncResponse 
                 ObjectOutputStream obj = new ObjectOutputStream(out);
                 obj.writeObject(claims);
                 obj.close();
+                out.close();
                 Log.d("HISTORY CACHE", "Cache was written " + f.getAbsolutePath());
             } catch (IOException e) {
                 Log.d("HISTORY CACHE", "Cache writing failed");
