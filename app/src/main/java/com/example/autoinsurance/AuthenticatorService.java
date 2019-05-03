@@ -4,6 +4,8 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+//Needed to authenticate accounts with account manager.
+
 public class AuthenticatorService extends Service {
     @Override
     public IBinder onBind(Intent intent) {

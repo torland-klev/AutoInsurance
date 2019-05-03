@@ -7,6 +7,9 @@ import android.accounts.NetworkErrorException;
 import android.content.Context;
 import android.os.Bundle;
 
+
+//Class needed. See documentation https://developer.android.com/training/id-auth/custom_auth.html
+
 public class AccountAuthenticator extends AbstractAccountAuthenticator {
 
     public AccountAuthenticator(Context context) {
