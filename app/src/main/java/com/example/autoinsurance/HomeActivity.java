@@ -121,6 +121,7 @@ public class HomeActivity extends AppCompatActivity implements AsyncResponse{
         String[] args = {"logout", SESSION_ID};
         asyncTask.execute(args);
         SESSION_ID = null;
+        checkMessagesThread.shutdown = true;
         finish();
     }
 
