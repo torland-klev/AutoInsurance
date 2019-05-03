@@ -4,7 +4,6 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -15,26 +14,20 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.HashMap;
 
 public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
     private final int BOOLEAN_REQUEST = 1;
     private final int ACCOUNT_PICKER = 2;
-    private final String CHANNEL_ID = "notify";
+    private final String CHANNEL_ID = "notify", accountType = "com.AutoInsurance";
     private MyThread testConnectionThread;
     private EditText USERNAME;
     private EditText PASSWORD;
@@ -75,12 +68,15 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
                     SDK_VERSION + " does not support autofill.\n");
         }
 
-        //Test connection
+        //Create notification-channel for notifications when new messages are detected.
         createNotificationChannel();
+        //Test connection
         testConnectionThread = new MyThread(CONNECTION_STATUS, CHANNEL_ID, this, null);
         testConnectionThread.start();
 
-        //Check if user has previous sessionID
+        //Check if user has previous sessionID stored in cache. If so, log the user in using
+        //that sessionID. If it turns out that the SessionID is broken, the user will be logged
+        //out, and the cache cleared.
         try {
             File f = new File(this.getCacheDir() + filename);
             BufferedReader in = new BufferedReader(new FileReader(f));
@@ -97,7 +93,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
 
         //Check for accounts
         am = AccountManager.get(this);
-        auAccounts = am.getAccountsByType("com.AutoInsurance");
+        auAccounts = am.getAccountsByType(accountType);
         if (auAccounts.length != 0){
             loginAuto();
         }
@@ -108,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
     /**
      * The loginButton calls this method.
      * Method creates a new Async task, and executes it with user-provided username and password.
-     * @param view: View that the button is clicked from (unsure about this, read more)
+     * @param view: View that the button is clicked from.
      */
     public void loginButton(View view) {
         AsyncWebServiceCaller asyncTask = new AsyncWebServiceCaller();
@@ -132,6 +128,19 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         asyncTask.execute(args);
     }
 
+    /**
+     * Login-auto is called if no SessionID is stored in cache, and if the Account Manager has
+     * accounts stored. It then provides the user with a display where the user can choose between
+     * the accounts stored.
+     * NOTE: there is currently no other way to delete accounts than to wipe the phone, or delete
+     * the account through settings.
+     *
+     * If the user chooses an account, the login will be completed by the onActivityResult()-method.
+     * If the user does not choose an account, do nothing and dismiss the dialog windows.
+     *
+     * Note: there is currently an issue where the dialog box shows twice. This has been proven
+     * to be more a graphical problem, and gives no other known practical issues.
+     */
     private void loginAuto(){
         //Displays dialog to user, where user can choose to pick account
         Log.d("LOGIN AUTO", "Login auto was called");
@@ -143,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         builder.setPositiveButton("YES", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int which) {
                 Intent intent = AccountManager.newChooseAccountIntent(null, null,
-                        new String[] { "com.AutoInsurance" }, true, null, null,
+                        new String[] { accountType }, true, null, null,
                         null, null);
                 startActivityForResult(intent, ACCOUNT_PICKER);
                 dialog.dismiss();
@@ -162,15 +171,23 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         alert.closeOptionsMenu();
     }
 
-    /** TODO: Switch to next activity
-     * Do something with the result from the AsyncWebServiceCaller
+    /**
+     * If the output from the async ws-caller is 0, then the login failed. Meaning wrong username
+     * and/or password.
+     *
+     * If the output from the async ws-caller is -1, then the async caller failed to connect to the
+     * server. This is an inconsistency on my part, as in the other cases the async caller returns
+     * 0 when the server is unavailable.
+     *
+     * If neither of these outputs, then it is assumes that login was a success. It will then
+     * call addAccount(), which adds the account to the device, and then write the SessionID to cache.
+     * Finally, in this successful scenario, calls the navigateToHomeScreen()-method with the SessionID.
+     *
      * @param output: Output returned from the Async task.
      */
     @Override
     public void processFinish(String output) {
 
-        Log.d("Call Results", output);
-        //Login return 0 if login failed.
         USERNAME.getText().clear();
         PASSWORD.getText().clear();
         USERNAME.requestFocus();
@@ -208,6 +225,13 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
         }
     }
 
+    /**
+     * Starts by checking if the account already exists, by comparing the accounts to the username.
+     * If exists, break and set the exists-flag. Else, do nothing.
+     * Then, if the exists-flag is set, and the username is non-empty, create a new account
+     * using the provided username and password. Finally, add the newly created account
+     * to the account-manager.
+     */
     private void addAccount(){
         boolean exists = false;
         for (int i = 0; i < auAccounts.length; i++){
@@ -218,16 +242,42 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             }
         }
         if (!exists && (username != null)) {
-            Account account = new Account(username, "com.AutoInsurance");
+            Account account = new Account(username, accountType);
             am.addAccountExplicitly(account, password, null);
         }
     }
 
+    /**
+     * Navigates to homescreen given the SessionID, using the returncode BOOLEAN_REQUEST. This
+     * requestcode was planned to use throughout the project, but is only used here.
+     * @param sessionID The sessionID retreived from server when logging in.
+     */
     private void navigateToHomeScreen(String sessionID) {
         Intent homeScreenIntent = new Intent(this, HomeActivity.class);
         homeScreenIntent.putExtra("SESSION_ID", sessionID);
         startActivityForResult(homeScreenIntent, BOOLEAN_REQUEST);
     }
+
+    /**
+     * Start by starting the testConnectingThread again, if it was somehow stopped. Unsure if this
+     * is necessary? I'm too afraid to remove it.
+     *
+     * If the requestCode is BOOLEAN_REQUEST, then the user pressed logout. If the result is OK
+     * (which it should always be, as the app is designed with robustness in mind), delete the
+     * cache-file containing the SessionID, else do nothing but warn user. After, call loginAuto()
+     * again, which will display an account-manager dialog box again.
+     *
+     * If the requestCode is ACCOUNT_PICKER, then it is the loginAuto()-method that is trying
+     * to log in using an account from account-manager. It then iterates through all accounts until
+     * it finds the one matching the provided username, and adds username and password of the
+     * given account as params to a login-request.
+     *
+     * If neither request-codes, then do nothing.
+     *
+     * @param requestCode Required.
+     * @param resultCode Required.
+     * @param data Required.
+     */
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -274,6 +324,10 @@ public class MainActivity extends AppCompatActivity implements AsyncResponse{
             }
         }
     }
+
+    /**
+     * Needed on API 26+ to send notifications.
+     */
     private void createNotificationChannel() {
         // Create the NotificationChannel, but only on API 26+ because
         // the NotificationChannel class is new and not in the support library
