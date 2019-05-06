@@ -107,6 +107,12 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         displayMessages();
     }
 
+
+    /**
+     * This method displays the messages retrieved by the intent in the constructor.
+     * It iteraties through all messages, and adds a new textview with date, sender and message
+     * of all given messages.
+     */
     private void displayMessages(){
 
         int c = 1234;
@@ -169,6 +175,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
                         set.connect(c-1, ConstraintSet.END, layout.getId(), ConstraintSet.END, dp);
                         set.connect(c-2, ConstraintSet.END, layout.getId(), ConstraintSet.END, dp);
                     }
+                    //Make the messages line up properly
                     set.connect(c-1, ConstraintSet.TOP, c, ConstraintSet.TOP);
                     set.connect(c-2, ConstraintSet.TOP, c-1, ConstraintSet.BOTTOM);
                     set.connect(R.id.new_chat, ConstraintSet.TOP, c-2, ConstraintSet.BOTTOM, dp);
@@ -180,6 +187,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
                     Log.d("TOTAL", Integer.toString(width));
                     set.constrainWidth(c, width/2);
                 }
+                //Apply all constraints
                 set.applyTo(layout);
             }
         }
@@ -190,6 +198,7 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
 
         //No cache needed, as the messages are not retrieved from server directly, but given from
         //the claim activity.
+
         //Something went wrong
         if (output.equals("false") || (output.equals("invalid sessionId"))){
             setResult(ERROR_CODE, new Intent());
@@ -271,6 +280,11 @@ public class ChatActivity extends AppCompatActivity implements AsyncResponse{
         finish();
     }
 
+    /**
+     * Sends a new message to the server.
+     *
+     * @param view View which the button is in.
+     */
     public void newMessage(View view) {
 
         //Get message-body from EditText-field, and send the message to server.

@@ -29,7 +29,7 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
     private Calendar myCalendar;
     private Intent mIntent;
     private String SESSION_ID;
-    private final int LOGOUT_CODE = 5;
+    private final int LOGOUT_CODE = 5, ERROR_CODE = -10;
     private boolean NEW_CLAIM_SUBMITTED = false;
 
     @Override
@@ -224,6 +224,10 @@ public class NewClaimActivity extends AppCompatActivity implements AsyncResponse
         if (requestCode == LOGOUT_CODE){
             if (resultCode == RESULT_OK){
                 setResult(RESULT_OK, new Intent());
+                finish();
+            }
+            else if (resultCode == ERROR_CODE){
+                setResult(ERROR_CODE, new Intent());
                 finish();
             }
         }

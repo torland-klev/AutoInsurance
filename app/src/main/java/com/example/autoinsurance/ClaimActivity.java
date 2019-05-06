@@ -160,7 +160,7 @@ public class ClaimActivity extends AppCompatActivity implements AsyncResponse{
                 setResult(RESULT_OK, new Intent());
                 finish();
             }
-            else {
+            else if (resultCode == ERROR_CODE){
                 setResult(ERROR_CODE, new Intent());
                 finish();
             }
